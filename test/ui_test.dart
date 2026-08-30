@@ -125,11 +125,10 @@ void main() {
 
     expect(find.byType(CardBackWidget), findsNWidgets(13));
     for (var index = 0; index < 13; index++) {
-      final rotation = tester.widget<Transform>(
+      final rotation = tester.widget<RotatedBox>(
         find.byKey(ValueKey('opponent-left-opponent-card-rotation-$index')),
       );
-      expect(rotation.transform.entry(0, 0), closeTo(0, .0001));
-      expect(rotation.transform.entry(1, 0), closeTo(-1, .0001));
+      expect(rotation.quarterTurns, 3);
     }
   });
 
@@ -153,7 +152,7 @@ void main() {
     expect(
       tester.widgetList<PlayingCardWidget>(find.byType(PlayingCardWidget)),
       everyElement(
-        isA<PlayingCardWidget>().having((widget) => widget.width, 'width', 64),
+        isA<PlayingCardWidget>().having((widget) => widget.width, 'width', 72),
       ),
     );
   });
@@ -171,6 +170,15 @@ void main() {
     await tester.pump();
 
     expect(find.byKey(const ValueKey('game-table')), findsOneWidget);
+    final positions = tester
+        .widgetList<OpponentPanel>(find.byType(OpponentPanel))
+        .map((panel) => panel.position)
+        .toSet();
+    expect(positions, {
+      OpponentPosition.top,
+      OpponentPosition.left,
+      OpponentPosition.right,
+    });
     expect(tester.takeException(), isNull);
   });
 

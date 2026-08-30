@@ -24,15 +24,15 @@ class OpponentHand extends StatelessWidget {
     final isTop = position == OpponentPosition.top;
     final cardWidth = isTop ? 30.0 : 28.0;
     final cardHeight = cardWidth * 1.42;
-    final paintedWidth = isTop ? cardWidth : cardHeight;
-    final paintedHeight = isTop ? cardHeight : cardWidth;
+    final laidOutWidth = isTop ? cardWidth : cardHeight;
+    final laidOutHeight = isTop ? cardHeight : cardWidth;
 
     return LayoutBuilder(
       builder: (context, constraints) {
         final availableExtent = isTop
             ? constraints.maxWidth
             : constraints.maxHeight;
-        final cardExtent = isTop ? paintedWidth : paintedHeight;
+        final cardExtent = isTop ? laidOutWidth : laidOutHeight;
         final step = cardCount <= 1
             ? 0.0
             : math.max(
@@ -47,37 +47,36 @@ class OpponentHand extends StatelessWidget {
             : math.min(availableExtent, cardExtent + step * (cardCount - 1));
 
         return SizedBox(
-          width: isTop ? fanExtent : paintedWidth + 4,
-          height: isTop ? paintedHeight + 3 : fanExtent,
+          width: isTop ? fanExtent : laidOutWidth,
+          height: isTop ? laidOutHeight : fanExtent,
           child: Stack(
             clipBehavior: Clip.none,
             children: [
               for (var index = 0; index < cardCount; index++)
                 Positioned(
-                  left: isTop ? index * step : (index.isEven ? 0 : 2),
-                  top: isTop ? (index.isEven ? 0 : 2) : index * step,
-                  child: SizedBox(
-                    width: paintedWidth,
-                    height: paintedHeight,
-                    child: Center(
-                      child: Transform.rotate(
-                        key: ValueKey(
-                          'opponent-$opponentId-card-rotation-$index',
-                        ),
-                        angle: position == OpponentPosition.left
-                            ? -math.pi / 2
-                            : position == OpponentPosition.right
-                            ? math.pi / 2
-                            : 0,
-                        child: CardBackWidget(
+                  left: isTop ? index * step : 0,
+                  top: isTop ? 0 : index * step,
+                  child: isTop
+                      ? CardBackWidget(
                           key: ValueKey(
                             'opponent-$opponentId-card-back-$index',
                           ),
                           width: cardWidth,
+                        )
+                      : RotatedBox(
+                          key: ValueKey(
+                            'opponent-$opponentId-card-rotation-$index',
+                          ),
+                          quarterTurns: position == OpponentPosition.left
+                              ? 3
+                              : 1,
+                          child: CardBackWidget(
+                            key: ValueKey(
+                              'opponent-$opponentId-card-back-$index',
+                            ),
+                            width: cardWidth,
+                          ),
                         ),
-                      ),
-                    ),
-                  ),
                 ),
             ],
           ),
@@ -112,63 +111,88 @@ class OpponentPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isTop = position == OpponentPosition.top;
-    final panel = Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Expanded(
-          child: Align(
-            alignment: Alignment.bottomCenter,
-            child: OpponentHand(
-              opponentId: opponentId,
-              cardCount: cardCount,
-              position: position,
-            ),
-          ),
+    Widget label() => AnimatedContainer(
+      duration: const Duration(milliseconds: 180),
+      width: isTop ? 116 : 62,
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
+      decoration: BoxDecoration(
+        color: const Color(0xFF173E34).withValues(alpha: .94),
+        borderRadius: BorderRadius.circular(11),
+        border: Border.all(
+          width: isActive ? 2 : 1,
+          color: isActive ? const Color(0xFFA9D5BD) : Colors.white24,
         ),
-        const SizedBox(height: 1),
-        AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          width: isTop ? 116 : 62,
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
-          decoration: BoxDecoration(
-            color: const Color(0xFF173E34).withValues(alpha: .94),
-            borderRadius: BorderRadius.circular(11),
-            border: Border.all(
-              width: isActive ? 2 : 1,
-              color: isActive ? const Color(0xFFA9D5BD) : Colors.white24,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            name,
+            maxLines: 1,
+            overflow: TextOverflow.clip,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 11.5,
+              fontWeight: FontWeight.w700,
             ),
           ),
-          child: Column(
+          Text(
+            '$cardCount $cardsLabel',
+            key: ValueKey('opponent-$opponentId-card-count'),
+            style: const TextStyle(color: Color(0xFFC5D7CE), fontSize: 11),
+          ),
+          if (isPassed)
+            Text(
+              passedLabel,
+              style: const TextStyle(
+                color: Color(0xFFFFC6C1),
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+        ],
+      ),
+    );
+
+    final panel = LayoutBuilder(
+      builder: (context, constraints) {
+        if (isTop) {
+          return Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                name,
-                maxLines: 1,
-                overflow: TextOverflow.clip,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.w700,
+              SizedBox(
+                width: constraints.maxWidth,
+                height: 40,
+                child: OpponentHand(
+                  opponentId: opponentId,
+                  cardCount: cardCount,
+                  position: position,
                 ),
               ),
-              Text(
-                '$cardCount $cardsLabel',
-                key: ValueKey('opponent-$opponentId-card-count'),
-                style: const TextStyle(color: Color(0xFFC5D7CE), fontSize: 11),
-              ),
-              if (isPassed)
-                Text(
-                  passedLabel,
-                  style: const TextStyle(
-                    color: Color(0xFFFFC6C1),
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+              const SizedBox(height: 2),
+              label(),
             ],
-          ),
-        ),
-      ],
+          );
+        }
+
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Expanded(
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: OpponentHand(
+                  opponentId: opponentId,
+                  cardCount: cardCount,
+                  position: position,
+                ),
+              ),
+            ),
+            const SizedBox(height: 2),
+            label(),
+          ],
+        );
+      },
     );
     return Semantics(
       label: '$name, $cardCount $cardsLabel${isPassed ? ', $passedLabel' : ''}',
@@ -206,7 +230,7 @@ class TableMoveArea extends StatelessWidget {
         child: SizedBox(
           key: ValueKey(Object.hashAll(cards)),
           width: outerConstraints.maxWidth,
-          height: 132,
+          height: 145,
           child: cards.isEmpty
               ? Center(
                   child: Text(
@@ -223,14 +247,16 @@ class TableMoveArea extends StatelessWidget {
                   children: [
                     SizedBox(
                       width: outerConstraints.maxWidth,
-                      height: 98,
+                      height: 112,
                       child: LayoutBuilder(
                         builder: (context, constraints) {
-                          const cardWidth = 64.0;
+                          final cardWidth = constraints.maxWidth < 200
+                              ? 72.0
+                              : 76.0;
                           final step = cards.length <= 1
                               ? 0.0
                               : math.min(
-                                  43.0,
+                                  cardWidth * .62,
                                   (constraints.maxWidth - cardWidth) /
                                       (cards.length - 1),
                                 );
@@ -252,7 +278,8 @@ class TableMoveArea extends StatelessWidget {
                         },
                       ),
                     ),
-                    if (ownerLabel != null)
+                    if (ownerLabel != null) ...[
+                      const SizedBox(height: 7),
                       Text(
                         ownerLabel!,
                         maxLines: 1,
@@ -263,6 +290,7 @@ class TableMoveArea extends StatelessWidget {
                           fontWeight: FontWeight.w600,
                         ),
                       ),
+                    ],
                   ],
                 ),
         ),

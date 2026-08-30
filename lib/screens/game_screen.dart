@@ -258,6 +258,7 @@ class _TableSurface extends StatelessWidget {
 
     OpponentPanel opponent(Player player, OpponentPosition position) {
       return OpponentPanel(
+        key: ValueKey('opponent-${player.id}-${position.name}'),
         opponentId: player.id,
         name: nameFor(player),
         cardCount: player.cardsRemaining,
@@ -285,67 +286,60 @@ class _TableSurface extends StatelessWidget {
       child: LayoutBuilder(
         builder: (context, constraints) {
           final topWidth = math.max(220.0, constraints.maxWidth - 20);
-          final clusterHeight = math.min(270.0, constraints.maxHeight - 8);
-          final clusterTop = math.max(
-            4.0,
-            constraints.maxHeight - clusterHeight - 4,
-          );
           final sideHeight = math.max(
-            112.0,
-            math.min(138.0, clusterHeight * .52),
+            140.0,
+            math.min(186.0, constraints.maxHeight * .48),
           );
           final centerWidth = math.max(
-            170.0,
-            math.min(248.0, constraints.maxWidth - 136),
+            180.0,
+            math.min(260.0, constraints.maxWidth - 128),
           );
           return Stack(
             children: [
-              Positioned(
-                top: clusterTop,
-                left: 0,
-                right: 0,
-                child: Center(
+              Align(
+                alignment: Alignment.topCenter,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 10),
                   child: SizedBox(
                     width: topWidth,
-                    height: 78,
+                    height: 82,
                     child: opponent(opponents[1], OpponentPosition.top),
                   ),
                 ),
               ),
-              Positioned(
-                left: 4,
-                top: clusterTop + 68,
-                child: SizedBox(
-                  width: 62,
-                  height: sideHeight,
-                  child: opponent(opponents[0], OpponentPosition.left),
-                ),
-              ),
-              Positioned(
-                right: 4,
-                top: clusterTop + 68,
-                child: SizedBox(
-                  width: 62,
-                  height: sideHeight,
-                  child: opponent(opponents[2], OpponentPosition.right),
-                ),
-              ),
-              Positioned(
-                top: clusterTop + 64,
-                left: 0,
-                right: 0,
-                child: Center(
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 4),
                   child: SizedBox(
-                    width: centerWidth,
-                    child: TableMoveArea(
-                      cards:
-                          state.currentTableMove?.cards ??
-                          const <PlayingCard>[],
-                      emptyLabel: loc.leadAPlay,
-                      ownerLabel: state.currentMovePlayer == null
-                          ? null
-                          : loc.lead(nameFor(state.currentMovePlayer!)),
-                    ),
+                    width: 62,
+                    height: sideHeight,
+                    child: opponent(opponents[0], OpponentPosition.left),
+                  ),
+                ),
+              ),
+              Align(
+                alignment: Alignment.centerRight,
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 4),
+                  child: SizedBox(
+                    width: 62,
+                    height: sideHeight,
+                    child: opponent(opponents[2], OpponentPosition.right),
+                  ),
+                ),
+              ),
+              Align(
+                alignment: Alignment.center,
+                child: SizedBox(
+                  width: centerWidth,
+                  child: TableMoveArea(
+                    cards:
+                        state.currentTableMove?.cards ?? const <PlayingCard>[],
+                    emptyLabel: loc.leadAPlay,
+                    ownerLabel: state.currentMovePlayer == null
+                        ? null
+                        : loc.lead(nameFor(state.currentMovePlayer!)),
                   ),
                 ),
               ),
