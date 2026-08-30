@@ -107,6 +107,26 @@ void main() {
   });
 
   group('Normal comparison', () {
+    test('2 suit order is spades, clubs, diamonds, hearts', () {
+      final twoSpades = m([c(CardRank.two, CardSuit.spades)]);
+      final twoClubs = m([c(CardRank.two, CardSuit.clubs)]);
+      final twoDiamonds = m([c(CardRank.two, CardSuit.diamonds)]);
+      final twoHearts = m([c(CardRank.two, CardSuit.hearts)]);
+
+      expect(
+        validator.canBeat(candidate: twoHearts, current: twoDiamonds).isValid,
+        isTrue,
+      );
+      expect(
+        validator.canBeat(candidate: twoDiamonds, current: twoClubs).isValid,
+        isTrue,
+      );
+      expect(
+        validator.canBeat(candidate: twoClubs, current: twoSpades).isValid,
+        isTrue,
+      );
+    });
+
     test('higher single and same-rank higher suit win', () {
       expect(
         validator.beats(
@@ -347,6 +367,115 @@ void main() {
         engine.playCards('p1', engine.players[1].hand.take(1).toList()).reason,
         MoveValidationReason.notYourTurn,
       );
+    });
+
+    test('unpassed human can play or pass against a lower-suit 2', () {
+      GameEngine inState() {
+        final result = engineWithHands([
+          [c(CardRank.two, CardSuit.hearts), c(CardRank.ace, CardSuit.spades)],
+          [c(CardRank.four, CardSuit.spades)],
+          [c(CardRank.five, CardSuit.spades)],
+          [c(CardRank.six, CardSuit.spades)],
+        ]);
+        result.state
+          ..openingRuleActive = false
+          ..currentTableMove = m([c(CardRank.two, CardSuit.diamonds)])
+          ..currentMovePlayerIndex = 3
+          ..currentPlayerIndex = 0;
+        return result;
+      }
+
+      final playEngine = inState();
+      expect(
+        playEngine.playCards('p0', [c(CardRank.two, CardSuit.hearts)]).isValid,
+        isTrue,
+      );
+
+      final passEngine = inState();
+      expect(passEngine.pass('p0').isValid, isTrue);
+    });
+
+    test('passed human with only a higher 2 is skipped', () {
+      final result = engineWithHands([
+        [c(CardRank.two, CardSuit.hearts)],
+        [c(CardRank.four, CardSuit.spades)],
+        [c(CardRank.five, CardSuit.spades)],
+        [c(CardRank.six, CardSuit.spades)],
+      ], current: 3);
+      result.state
+        ..openingRuleActive = false
+        ..currentTableMove = m([c(CardRank.two, CardSuit.diamonds)])
+        ..currentMovePlayerIndex = 2
+        ..currentPlayerIndex = 3
+        ..passedPlayerIds.add('p0');
+
+      expect(
+        validator.isChopAgainstTwos(
+          m([c(CardRank.two, CardSuit.hearts)]),
+          result.state.currentTableMove!,
+        ),
+        isFalse,
+      );
+      expect(result.pass('p3').isValid, isTrue);
+      expect(result.state.currentPlayer.id, 'p1');
+    });
+
+    test('passed human may re-enter with four of a kind chop', () {
+      final bomb = four(CardRank.seven);
+      final result = engineWithHands([
+        [...bomb, c(CardRank.ace, CardSuit.spades)],
+        [c(CardRank.four, CardSuit.spades)],
+        [c(CardRank.five, CardSuit.spades)],
+        [c(CardRank.six, CardSuit.spades)],
+      ], current: 3);
+      result.state
+        ..openingRuleActive = false
+        ..currentTableMove = m([c(CardRank.two, CardSuit.diamonds)])
+        ..currentMovePlayerIndex = 2
+        ..currentPlayerIndex = 3
+        ..passedPlayerIds.add('p0');
+
+      expect(result.pass('p3').isValid, isTrue);
+      expect(result.state.currentPlayer.id, 'p0');
+      expect(result.playCards('p0', bomb).isValid, isTrue);
+    });
+
+    test('turn does not wrap to trick owner while an opponent is eligible', () {
+      final result = engineWithHands([
+        [c(CardRank.two, CardSuit.diamonds)],
+        [c(CardRank.two, CardSuit.hearts)],
+        [c(CardRank.five, CardSuit.spades)],
+        [c(CardRank.six, CardSuit.spades)],
+      ], current: 2);
+      result.state
+        ..openingRuleActive = false
+        ..currentTableMove = m([c(CardRank.two, CardSuit.diamonds)])
+        ..currentMovePlayerIndex = 0
+        ..currentPlayerIndex = 2
+        ..passedPlayerIds.add('p3');
+
+      expect(result.pass('p2').isValid, isTrue);
+      expect(result.state.currentPlayer.id, 'p1');
+    });
+
+    test('trick reset clears passes and restores owner lead', () {
+      final result = engineWithHands([
+        [c(CardRank.ace, CardSuit.hearts)],
+        [c(CardRank.four, CardSuit.spades)],
+        [c(CardRank.five, CardSuit.spades)],
+        [c(CardRank.six, CardSuit.spades)],
+      ], current: 3);
+      result.state
+        ..openingRuleActive = false
+        ..currentTableMove = m([c(CardRank.ace, CardSuit.hearts)])
+        ..currentMovePlayerIndex = 0
+        ..currentPlayerIndex = 3
+        ..passedPlayerIds.addAll(['p1', 'p2']);
+
+      expect(result.pass('p3').isValid, isTrue);
+      expect(result.state.currentTableMove, isNull);
+      expect(result.state.passedPlayerIds, isEmpty);
+      expect(result.state.currentPlayer.id, 'p0');
     });
   });
 

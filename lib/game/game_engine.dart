@@ -189,20 +189,30 @@ class GameEngine {
 
   bool _hasEligibleOpponent(int owner) {
     for (var index = 0; index < players.length; index++) {
-      if (index == owner || players[index].cardsRemaining == 0) continue;
-      if (!state.hasPassed(players[index].id) || _canChop(index)) return true;
+      if (_isEligibleOpponent(index, owner)) return true;
     }
     return false;
   }
 
   int? _nextEligibleIndex(int from) {
+    final owner = state.currentMovePlayerIndex;
     for (var offset = 1; offset <= players.length; offset++) {
       final index = (from + offset) % players.length;
-      final player = players[index];
-      if (player.cardsRemaining == 0) continue;
-      if (!state.hasPassed(player.id) || _canChop(index)) return index;
+      if (owner == null) {
+        if (players[index].cardsRemaining > 0) return index;
+      } else if (_isEligibleOpponent(index, owner)) {
+        return index;
+      }
     }
     return null;
+  }
+
+  bool _isEligibleOpponent(int playerIndex, int owner) {
+    if (playerIndex == owner || players[playerIndex].cardsRemaining == 0) {
+      return false;
+    }
+    final player = players[playerIndex];
+    return !state.hasPassed(player.id) || _canChop(playerIndex);
   }
 
   bool _canChop(int playerIndex) {
