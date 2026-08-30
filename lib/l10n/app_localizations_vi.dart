@@ -46,7 +46,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String computer(int number) {
-    return 'Máy $number';
+    return 'CPU $number';
   }
 
   @override

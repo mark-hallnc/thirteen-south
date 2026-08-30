@@ -46,7 +46,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String computer(int number) {
-    return 'Computer $number';
+    return 'CPU $number';
   }
 
   @override

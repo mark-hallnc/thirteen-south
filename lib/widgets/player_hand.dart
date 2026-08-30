@@ -26,7 +26,7 @@ class PlayerHand extends StatelessWidget {
         final cardWidth = constraints.maxWidth < 350 ? 50.0 : 56.0;
         final cardHeight = cardWidth * 1.42;
         final count = cards.length;
-        final naturalStep = cardWidth * .72;
+        final naturalStep = cardWidth * .64;
         final fitStep = count <= 1
             ? 0.0
             : (constraints.maxWidth - cardWidth) / (count - 1);
@@ -37,7 +37,7 @@ class PlayerHand extends StatelessWidget {
         final start = math.max(0.0, (constraints.maxWidth - handWidth) / 2);
 
         return SizedBox(
-          height: cardHeight + 14,
+          height: cardHeight + 12,
           child: Stack(
             clipBehavior: Clip.none,
             children: [
@@ -47,7 +47,7 @@ class PlayerHand extends StatelessWidget {
                   duration: const Duration(milliseconds: 160),
                   curve: Curves.easeOutCubic,
                   left: start + index * step,
-                  top: selectedCards.contains(cards[index]) ? 0 : 12,
+                  top: selectedCards.contains(cards[index]) ? 0 : 10,
                   child: PlayingCardWidget(
                     card: cards[index],
                     width: cardWidth,

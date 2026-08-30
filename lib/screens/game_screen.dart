@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:tien_len/l10n/app_localizations.dart';
@@ -152,7 +153,7 @@ class _GameScreenState extends State<GameScreen> {
                 ),
                 Container(
                   color: Theme.of(context).colorScheme.surface,
-                  padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+                  padding: const EdgeInsets.fromLTRB(12, 4, 12, 2),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -160,7 +161,7 @@ class _GameScreenState extends State<GameScreen> {
                         duration: const Duration(milliseconds: 180),
                         padding: const EdgeInsets.symmetric(
                           horizontal: 12,
-                          vertical: 5,
+                          vertical: 3,
                         ),
                         decoration: BoxDecoration(
                           color: humanTurn
@@ -185,7 +186,7 @@ class _GameScreenState extends State<GameScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 5),
+                      const SizedBox(height: 2),
                       Row(
                         children: [
                           Expanded(
@@ -198,7 +199,7 @@ class _GameScreenState extends State<GameScreen> {
                               child: Text(loc.pass),
                             ),
                           ),
-                          const SizedBox(width: 10),
+                          const SizedBox(width: 8),
                           Expanded(
                             child: FilledButton(
                               key: const ValueKey('play-button'),
@@ -215,7 +216,7 @@ class _GameScreenState extends State<GameScreen> {
                 ),
                 Container(
                   color: Theme.of(context).colorScheme.surface,
-                  padding: const EdgeInsets.fromLTRB(8, 0, 8, 5),
+                  padding: const EdgeInsets.fromLTRB(8, 0, 8, 3),
                   child: PlayerHand(
                     cards: human.hand,
                     selectedCards: _selected,
@@ -255,15 +256,16 @@ class _TableSurface extends StatelessWidget {
     final state = engine.state;
     final opponents = engine.players.skip(1).toList();
 
-    OpponentPanel opponent(Player player, {bool compact = false}) {
+    OpponentPanel opponent(Player player, OpponentPosition position) {
       return OpponentPanel(
+        opponentId: player.id,
         name: nameFor(player),
         cardCount: player.cardsRemaining,
         cardsLabel: loc.cards,
         passedLabel: loc.passed,
         isPassed: state.hasPassed(player.id),
         isActive: state.isActive && state.currentPlayer == player,
-        compact: compact,
+        position: position,
       );
     }
 
@@ -282,32 +284,69 @@ class _TableSurface extends StatelessWidget {
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final compact = constraints.maxWidth < 360;
+          final topWidth = math.max(220.0, constraints.maxWidth - 20);
+          final clusterHeight = math.min(270.0, constraints.maxHeight - 8);
+          final clusterTop = math.max(
+            4.0,
+            constraints.maxHeight - clusterHeight - 4,
+          );
+          final sideHeight = math.max(
+            112.0,
+            math.min(138.0, clusterHeight * .52),
+          );
+          final centerWidth = math.max(
+            170.0,
+            math.min(248.0, constraints.maxWidth - 136),
+          );
           return Stack(
             children: [
               Positioned(
-                top: 8,
+                top: clusterTop,
                 left: 0,
                 right: 0,
-                child: Center(child: opponent(opponents[1], compact: compact)),
+                child: Center(
+                  child: SizedBox(
+                    width: topWidth,
+                    height: 78,
+                    child: opponent(opponents[1], OpponentPosition.top),
+                  ),
+                ),
               ),
               Positioned(
-                left: 8,
-                top: constraints.maxHeight * .43,
-                child: opponent(opponents[0], compact: true),
+                left: 4,
+                top: clusterTop + 68,
+                child: SizedBox(
+                  width: 62,
+                  height: sideHeight,
+                  child: opponent(opponents[0], OpponentPosition.left),
+                ),
               ),
               Positioned(
-                right: 8,
-                top: constraints.maxHeight * .43,
-                child: opponent(opponents[2], compact: true),
+                right: 4,
+                top: clusterTop + 68,
+                child: SizedBox(
+                  width: 62,
+                  height: sideHeight,
+                  child: opponent(opponents[2], OpponentPosition.right),
+                ),
               ),
-              Center(
-                child: TableMoveArea(
-                  cards: state.currentTableMove?.cards ?? const <PlayingCard>[],
-                  emptyLabel: loc.leadAPlay,
-                  ownerLabel: state.currentMovePlayer == null
-                      ? null
-                      : loc.lead(nameFor(state.currentMovePlayer!)),
+              Positioned(
+                top: clusterTop + 64,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: SizedBox(
+                    width: centerWidth,
+                    child: TableMoveArea(
+                      cards:
+                          state.currentTableMove?.cards ??
+                          const <PlayingCard>[],
+                      emptyLabel: loc.leadAPlay,
+                      ownerLabel: state.currentMovePlayer == null
+                          ? null
+                          : loc.lead(nameFor(state.currentMovePlayer!)),
+                    ),
+                  ),
                 ),
               ),
             ],
