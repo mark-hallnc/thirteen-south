@@ -49,7 +49,7 @@ Widget opponentPanel({required int cardCount}) {
         height: 110,
         child: OpponentPanel(
           opponentId: 'test-opponent',
-          name: 'Computer 1',
+          name: 'Player 1',
           cardCount: cardCount,
           cardsLabel: 'cards',
           passedLabel: 'Passed',
@@ -82,6 +82,9 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
     expect(find.byKey(const ValueKey('game-table')), findsOneWidget);
+    expect(find.text('Player 1'), findsOneWidget);
+    expect(find.text('Player 2'), findsOneWidget);
+    expect(find.text('Player 3'), findsOneWidget);
     expect(find.byType(PlayingCardWidget), findsNWidgets(13));
   });
 

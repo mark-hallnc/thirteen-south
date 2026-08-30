@@ -55,33 +55,65 @@ class PlayingCardWidget extends StatelessWidget {
               ],
             ),
             child: Padding(
-              padding: EdgeInsets.all(width * .1),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              padding: EdgeInsets.all(width * .075),
+              child: Stack(
                 children: [
-                  Text(
-                    card.rankDisplay,
-                    style: TextStyle(
-                      height: .95,
-                      fontSize: width * .28,
-                      fontWeight: FontWeight.w800,
+                  Align(
+                    alignment: Alignment.topLeft,
+                    child: _CardIndex(
+                      rank: card.rankDisplay,
+                      suit: card.suitDisplay,
                       color: suitColor,
+                      width: width,
                     ),
                   ),
-                  Text(
-                    card.suitDisplay,
-                    style: TextStyle(
-                      height: 1,
-                      fontSize: width * .26,
-                      color: suitColor,
-                    ),
+                  Center(
+                    child:
+                        card.rank == CardRank.jack ||
+                            card.rank == CardRank.queen ||
+                            card.rank == CardRank.king
+                        ? Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                card.rankDisplay,
+                                style: TextStyle(
+                                  height: .9,
+                                  fontSize: width * .48,
+                                  fontWeight: FontWeight.w900,
+                                  fontFamily: 'serif',
+                                  color: suitColor,
+                                ),
+                              ),
+                              Text(
+                                card.suitDisplay,
+                                style: TextStyle(
+                                  height: .9,
+                                  fontSize: width * .3,
+                                  color: suitColor,
+                                ),
+                              ),
+                            ],
+                          )
+                        : Text(
+                            card.suitDisplay,
+                            style: TextStyle(
+                              fontSize: width * .5,
+                              color: suitColor,
+                              height: 1,
+                            ),
+                          ),
                   ),
-                  const Spacer(),
                   Align(
                     alignment: Alignment.bottomRight,
-                    child: Text(
-                      card.suitDisplay,
-                      style: TextStyle(fontSize: width * .32, color: suitColor),
+                    child: RotatedBox(
+                      quarterTurns: 2,
+                      child: _CardIndex(
+                        rank: card.rankDisplay,
+                        suit: card.suitDisplay,
+                        color: suitColor,
+                        width: width,
+                      ),
                     ),
                   ),
                 ],
@@ -90,6 +122,43 @@ class PlayingCardWidget extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _CardIndex extends StatelessWidget {
+  const _CardIndex({
+    required this.rank,
+    required this.suit,
+    required this.color,
+    required this.width,
+  });
+
+  final String rank;
+  final String suit;
+  final Color color;
+  final double width;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          rank,
+          style: TextStyle(
+            height: .82,
+            fontSize: width * .25,
+            fontWeight: FontWeight.w900,
+            fontFamily: 'serif',
+            color: color,
+          ),
+        ),
+        Text(
+          suit,
+          style: TextStyle(height: .9, fontSize: width * .19, color: color),
+        ),
+      ],
     );
   }
 }
@@ -108,7 +177,7 @@ class CardBackWidget extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF244D58),
         borderRadius: BorderRadius.circular(width * .12),
-        border: Border.all(color: const Color(0xFFD6DED9), width: 1.2),
+        border: Border.all(color: const Color(0xFFE5ECE8), width: 1.4),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: .18),
@@ -117,11 +186,14 @@ class CardBackWidget extends StatelessWidget {
           ),
         ],
       ),
-      padding: EdgeInsets.all(width * .14),
+      padding: EdgeInsets.all(width * .12),
       child: DecoratedBox(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(width * .06),
-          border: Border.all(color: Colors.white.withValues(alpha: .48)),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: .58),
+            width: 1.1,
+          ),
         ),
         child: Center(
           child: Transform.rotate(

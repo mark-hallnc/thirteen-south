@@ -173,7 +173,7 @@ abstract class AppLocalizations {
   /// No description provided for @computer.
   ///
   /// In en, this message translates to:
-  /// **'CPU {number}'**
+  /// **'Player {number}'**
   String computer(int number);
 
   /// No description provided for @yourTurn.

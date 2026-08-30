@@ -22,7 +22,7 @@ class OpponentHand extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isTop = position == OpponentPosition.top;
-    final cardWidth = isTop ? 30.0 : 28.0;
+    final cardWidth = isTop ? 40.0 : 38.0;
     final cardHeight = cardWidth * 1.42;
     final laidOutWidth = isTop ? cardWidth : cardHeight;
     final laidOutHeight = isTop ? cardHeight : cardWidth;
@@ -113,7 +113,7 @@ class OpponentPanel extends StatelessWidget {
     final isTop = position == OpponentPosition.top;
     Widget label() => AnimatedContainer(
       duration: const Duration(milliseconds: 180),
-      width: isTop ? 116 : 62,
+      width: isTop ? 116 : 72,
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
       decoration: BoxDecoration(
         color: const Color(0xFF173E34).withValues(alpha: .94),
@@ -126,14 +126,16 @@ class OpponentPanel extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            name,
-            maxLines: 1,
-            overflow: TextOverflow.clip,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 11.5,
-              fontWeight: FontWeight.w700,
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              name,
+              maxLines: 1,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 11.5,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
           Text(
@@ -154,46 +156,39 @@ class OpponentPanel extends StatelessWidget {
       ),
     );
 
-    final panel = LayoutBuilder(
-      builder: (context, constraints) {
-        if (isTop) {
-          return Column(
+    final panel = isTop
+        ? Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               SizedBox(
-                width: constraints.maxWidth,
-                height: 40,
+                width: double.infinity,
+                height: 57,
                 child: OpponentHand(
                   opponentId: opponentId,
                   cardCount: cardCount,
                   position: position,
                 ),
               ),
-              const SizedBox(height: 2),
+              const SizedBox(height: 4),
+              label(),
+            ],
+          )
+        : Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                width: 54,
+                height: 130,
+                child: OpponentHand(
+                  opponentId: opponentId,
+                  cardCount: cardCount,
+                  position: position,
+                ),
+              ),
+              const SizedBox(height: 4),
               label(),
             ],
           );
-        }
-
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Expanded(
-              child: Align(
-                alignment: Alignment.bottomCenter,
-                child: OpponentHand(
-                  opponentId: opponentId,
-                  cardCount: cardCount,
-                  position: position,
-                ),
-              ),
-            ),
-            const SizedBox(height: 2),
-            label(),
-          ],
-        );
-      },
-    );
     return Semantics(
       label: '$name, $cardCount $cardsLabel${isPassed ? ', $passedLabel' : ''}',
       container: true,

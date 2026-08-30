@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tien_len/l10n/app_localizations.dart';
 
@@ -7,8 +8,9 @@ import 'screens/home_screen.dart';
 import 'theme/app_theme.dart';
 import 'locale_controller_scope.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   runApp(const TienLenApp());
 }
 

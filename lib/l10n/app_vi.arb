@@ -12,7 +12,7 @@
   "vietnamese": "Tiếng Việt",
   "you": "Bạn",
   "player": "Người chơi",
-  "computer": "CPU {number}",
+  "computer": "Người chơi {number}",
   "@computer": {"placeholders": {"number": {"type": "int"}}},
   "yourTurn": "Lượt của bạn",
   "playerTurn": "Lượt của {player}",

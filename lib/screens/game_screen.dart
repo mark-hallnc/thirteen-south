@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:tien_len/l10n/app_localizations.dart';
@@ -283,69 +282,53 @@ class _TableSurface extends StatelessWidget {
           ),
         ],
       ),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final topWidth = math.max(220.0, constraints.maxWidth - 20);
-          final sideHeight = math.max(
-            140.0,
-            math.min(186.0, constraints.maxHeight * .48),
-          );
-          final centerWidth = math.max(
-            180.0,
-            math.min(260.0, constraints.maxWidth - 128),
-          );
-          return Stack(
-            children: [
-              Align(
-                alignment: Alignment.topCenter,
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 10),
-                  child: SizedBox(
-                    width: topWidth,
-                    height: 82,
-                    child: opponent(opponents[1], OpponentPosition.top),
-                  ),
-                ),
+      child: Stack(
+        children: [
+          Positioned(
+            top: 12,
+            left: 12,
+            right: 12,
+            child: SizedBox(
+              height: 110,
+              child: opponent(opponents[1], OpponentPosition.top),
+            ),
+          ),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Padding(
+              padding: const EdgeInsets.only(left: 8),
+              child: SizedBox(
+                width: 80,
+                height: 190,
+                child: opponent(opponents[0], OpponentPosition.left),
               ),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 4),
-                  child: SizedBox(
-                    width: 62,
-                    height: sideHeight,
-                    child: opponent(opponents[0], OpponentPosition.left),
-                  ),
-                ),
+            ),
+          ),
+          Align(
+            alignment: Alignment.center,
+            child: FractionallySizedBox(
+              widthFactor: .60,
+              child: TableMoveArea(
+                cards: state.currentTableMove?.cards ?? const <PlayingCard>[],
+                emptyLabel: loc.leadAPlay,
+                ownerLabel: state.currentMovePlayer == null
+                    ? null
+                    : loc.lead(nameFor(state.currentMovePlayer!)),
               ),
-              Align(
-                alignment: Alignment.centerRight,
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 4),
-                  child: SizedBox(
-                    width: 62,
-                    height: sideHeight,
-                    child: opponent(opponents[2], OpponentPosition.right),
-                  ),
-                ),
+            ),
+          ),
+          Align(
+            alignment: Alignment.centerRight,
+            child: Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: SizedBox(
+                width: 80,
+                height: 190,
+                child: opponent(opponents[2], OpponentPosition.right),
               ),
-              Align(
-                alignment: Alignment.center,
-                child: SizedBox(
-                  width: centerWidth,
-                  child: TableMoveArea(
-                    cards:
-                        state.currentTableMove?.cards ?? const <PlayingCard>[],
-                    emptyLabel: loc.leadAPlay,
-                    ownerLabel: state.currentMovePlayer == null
-                        ? null
-                        : loc.lead(nameFor(state.currentMovePlayer!)),
-                  ),
-                ),
-              ),
-            ],
-          );
-        },
+            ),
+          ),
+        ],
       ),
     );
   }

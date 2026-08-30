@@ -12,7 +12,7 @@
   "vietnamese": "Vietnamese",
   "you": "You",
   "player": "Player",
-  "computer": "CPU {number}",
+  "computer": "Player {number}",
   "@computer": {"placeholders": {"number": {"type": "int"}}},
   "yourTurn": "Your turn",
   "playerTurn": "{player}'s turn",
