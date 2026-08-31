@@ -98,6 +98,120 @@ abstract class AppLocalizations {
     Locale('vi'),
   ];
 
+  /// No description provided for @difficulty.
+  ///
+  /// In en, this message translates to:
+  /// **'Difficulty'**
+  String get difficulty;
+
+  /// No description provided for @easy.
+  ///
+  /// In en, this message translates to:
+  /// **'Easy'**
+  String get easy;
+
+  /// No description provided for @normal.
+  ///
+  /// In en, this message translates to:
+  /// **'Normal'**
+  String get normal;
+
+  /// No description provided for @hard.
+  ///
+  /// In en, this message translates to:
+  /// **'Hard'**
+  String get hard;
+
+  /// No description provided for @easyDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Relaxed opponents that often choose simple plays.'**
+  String get easyDescription;
+
+  /// No description provided for @normalDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Balanced play with basic strategy.'**
+  String get normalDescription;
+
+  /// No description provided for @hardDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'More careful play with stronger strategic decisions.'**
+  String get hardDescription;
+
+  /// No description provided for @statistics.
+  ///
+  /// In en, this message translates to:
+  /// **'Statistics'**
+  String get statistics;
+
+  /// No description provided for @gamesPlayed.
+  ///
+  /// In en, this message translates to:
+  /// **'Games played'**
+  String get gamesPlayed;
+
+  /// No description provided for @wins.
+  ///
+  /// In en, this message translates to:
+  /// **'Wins'**
+  String get wins;
+
+  /// No description provided for @losses.
+  ///
+  /// In en, this message translates to:
+  /// **'Losses'**
+  String get losses;
+
+  /// No description provided for @winRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Win rate'**
+  String get winRate;
+
+  /// No description provided for @currentStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Current streak'**
+  String get currentStreak;
+
+  /// No description provided for @bestStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Best streak'**
+  String get bestStreak;
+
+  /// No description provided for @resetStatistics.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset Statistics'**
+  String get resetStatistics;
+
+  /// No description provided for @resetStatisticsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset statistics?'**
+  String get resetStatisticsTitle;
+
+  /// No description provided for @resetStatisticsMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'This will reset all wins, losses, and streaks. Your language and difficulty will not change.'**
+  String get resetStatisticsMessage;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @reset.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset'**
+  String get reset;
+
   /// No description provided for @appTitle.
   ///
   /// In en, this message translates to:

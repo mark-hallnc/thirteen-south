@@ -1,4 +1,5 @@
 import '../ai/ai_player.dart';
+import '../ai/ai_difficulty.dart';
 import '../ai/legal_move_generator.dart';
 import '../models/game_state.dart';
 import '../models/player.dart';
@@ -14,6 +15,7 @@ class GameEngine {
     MoveValidator? validator,
     HandAnalyzer? analyzer,
     AiPlayer? ai,
+    this.difficulty = AiDifficulty.normal,
   }) : deck = deck ?? Deck(),
        players = players ?? _defaultPlayers(),
        validator = validator ?? MoveValidator(),
@@ -30,13 +32,17 @@ class GameEngine {
   final MoveValidator validator;
   final HandAnalyzer analyzer;
   final AiPlayer ai;
+  AiDifficulty difficulty;
   final LegalMoveGenerator _moveGenerator = LegalMoveGenerator();
   late GameState _state;
   late int startingPlayerIndex;
+  late String gameId;
+  static int _sessionSequence = 0;
 
   GameState get state => _state;
 
   void startNewGame() {
+    _beginSession();
     deck.reset();
     deck.shuffle();
     final hands = deck.dealFourPlayers();
@@ -61,6 +67,7 @@ class GameEngine {
     List<List<PlayingCard>> hands, {
     int? currentPlayerIndex,
   }) {
+    _beginSession();
     if (hands.length != 4) {
       throw ArgumentError('Exactly four hands are required.');
     }
@@ -156,6 +163,11 @@ class GameEngine {
       currentMove: table,
       mustContainThreeSpades: state.openingRuleActive,
       allowOnlyChop: state.hasPassed(player.id),
+      difficulty: difficulty,
+      opponentCardCounts: players
+          .where((opponent) => opponent != player)
+          .map((opponent) => opponent.cardsRemaining)
+          .toList(),
     );
     return move == null ? pass(player.id) : playCards(player.id, move.cards);
   }
@@ -233,6 +245,10 @@ class GameEngine {
       if (players[index].hand.contains(_threeSpades)) return index;
     }
     throw StateError('No player holds 3♠.');
+  }
+
+  void _beginSession() {
+    gameId = '${DateTime.now().microsecondsSinceEpoch}-${_sessionSequence++}';
   }
 
   static List<Player> _defaultPlayers() => List.generate(

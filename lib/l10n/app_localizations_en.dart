@@ -9,6 +9,66 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get difficulty => 'Difficulty';
+
+  @override
+  String get easy => 'Easy';
+
+  @override
+  String get normal => 'Normal';
+
+  @override
+  String get hard => 'Hard';
+
+  @override
+  String get easyDescription =>
+      'Relaxed opponents that often choose simple plays.';
+
+  @override
+  String get normalDescription => 'Balanced play with basic strategy.';
+
+  @override
+  String get hardDescription =>
+      'More careful play with stronger strategic decisions.';
+
+  @override
+  String get statistics => 'Statistics';
+
+  @override
+  String get gamesPlayed => 'Games played';
+
+  @override
+  String get wins => 'Wins';
+
+  @override
+  String get losses => 'Losses';
+
+  @override
+  String get winRate => 'Win rate';
+
+  @override
+  String get currentStreak => 'Current streak';
+
+  @override
+  String get bestStreak => 'Best streak';
+
+  @override
+  String get resetStatistics => 'Reset Statistics';
+
+  @override
+  String get resetStatisticsTitle => 'Reset statistics?';
+
+  @override
+  String get resetStatisticsMessage =>
+      'This will reset all wins, losses, and streaks. Your language and difficulty will not change.';
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
+  String get reset => 'Reset';
+
+  @override
   String get appTitle => 'Thirteen South: Tiến Lên';
 
   @override

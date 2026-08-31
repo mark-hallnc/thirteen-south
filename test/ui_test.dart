@@ -327,6 +327,26 @@ void main() {
     expect(find.text('Ván mới'), findsOneWidget);
   });
 
+  testWidgets('Settings renders difficulty and statistics controls', (
+    tester,
+  ) async {
+    await tester.pumpWidget(const TienLenApp());
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Settings'));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('difficulty-easy')), findsOneWidget);
+    expect(find.byKey(const ValueKey('difficulty-normal')), findsOneWidget);
+    expect(find.byKey(const ValueKey('difficulty-hard')), findsOneWidget);
+    await tester.drag(find.byType(ListView), const Offset(0, -600));
+    await tester.pumpAndSettle();
+    expect(find.text('Statistics'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('reset-statistics-button')),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('Game-over overlay identifies a human winner', (tester) async {
     final engine = humanLeadEngine(winningHand: true);
     final winningCard = engine.players.first.hand.single;

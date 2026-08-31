@@ -7,6 +7,7 @@ import '../game/game_engine.dart';
 import '../game/move_validator.dart';
 import '../models/player.dart';
 import '../models/playing_card.dart';
+import '../preferences_scope.dart';
 import '../widgets/game_table_widgets.dart';
 import '../widgets/player_hand.dart';
 
@@ -29,6 +30,7 @@ class _GameScreenState extends State<GameScreen> {
   final Set<PlayingCard> _selected = <PlayingCard>{};
   int _aiRun = 0;
   Timer? _aiTimer;
+  bool _resultRecorded = false;
 
   @override
   void initState() {
@@ -44,6 +46,16 @@ class _GameScreenState extends State<GameScreen> {
     super.dispose();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final preferences = PreferencesScope.maybeOf(context);
+    if (preferences != null) _engine.difficulty = preferences.difficulty;
+    if (_engine.state.winner != null && !_resultRecorded) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _recordResult());
+    }
+  }
+
   void _runAiTurns() {
     if (_aiTimer?.isActive ?? false) return;
     if (!mounted ||
@@ -56,6 +68,7 @@ class _GameScreenState extends State<GameScreen> {
       _aiTimer = null;
       if (!mounted || run != _aiRun || !_engine.state.isActive) return;
       setState(_engine.performAiTurn);
+      _recordResult();
       _runAiTurns();
     });
   }
@@ -73,6 +86,7 @@ class _GameScreenState extends State<GameScreen> {
     );
     if (result.isValid) {
       setState(_selected.clear);
+      _recordResult();
       _runAiTurns();
     } else {
       _showError(result.reason);
@@ -95,9 +109,20 @@ class _GameScreenState extends State<GameScreen> {
     _aiTimer = null;
     setState(() {
       _selected.clear();
+      _resultRecorded = false;
       _engine.startNewGame();
     });
     _runAiTurns();
+  }
+
+  void _recordResult() {
+    final winner = _engine.state.winner;
+    if (winner == null || _resultRecorded) return;
+    _resultRecorded = true;
+    final preferences = PreferencesScope.maybeOf(context);
+    if (preferences != null) {
+      unawaited(preferences.recordGameResult(_engine.gameId, winner.isHuman));
+    }
   }
 
   void _showError(MoveValidationReason? reason) {

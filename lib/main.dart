@@ -4,7 +4,11 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tien_len/l10n/app_localizations.dart';
 
+import 'ai/ai_difficulty.dart';
+import 'models/game_statistics.dart';
+import 'preferences_scope.dart';
 import 'screens/home_screen.dart';
+import 'services/preferences_service.dart';
 import 'theme/app_theme.dart';
 import 'locale_controller_scope.dart';
 
@@ -24,17 +28,27 @@ class TienLenApp extends StatefulWidget {
 class _TienLenAppState extends State<TienLenApp> {
   static const _localeKey = 'app_locale';
   Locale? _locale;
+  AiDifficulty _difficulty = AiDifficulty.normal;
+  GameStatistics _statistics = const GameStatistics();
+  PreferencesService? _preferencesService;
 
   @override
   void initState() {
     super.initState();
-    _loadLocale();
+    _loadPreferences();
   }
 
-  Future<void> _loadLocale() async {
-    final value = (await SharedPreferences.getInstance()).getString(_localeKey);
-    if (!mounted || value == null || value == 'system') return;
-    setState(() => _locale = Locale(value));
+  Future<void> _loadPreferences() async {
+    final preferences = await SharedPreferences.getInstance();
+    final service = PreferencesService(preferences);
+    final value = preferences.getString(_localeKey);
+    if (!mounted) return;
+    setState(() {
+      _preferencesService = service;
+      _difficulty = service.loadDifficulty();
+      _statistics = service.loadStatistics();
+      if (value != null && value != 'system') _locale = Locale(value);
+    });
   }
 
   Future<void> _setLocale(Locale? locale) async {
@@ -43,30 +57,67 @@ class _TienLenAppState extends State<TienLenApp> {
     await preferences.setString(_localeKey, locale?.languageCode ?? 'system');
   }
 
+  Future<void> _setDifficulty(AiDifficulty difficulty) async {
+    setState(() => _difficulty = difficulty);
+    final service =
+        _preferencesService ??
+        PreferencesService(await SharedPreferences.getInstance());
+    _preferencesService = service;
+    await service.saveDifficulty(difficulty);
+  }
+
+  Future<void> _recordGameResult(String gameId, bool humanWon) async {
+    final service =
+        _preferencesService ??
+        PreferencesService(await SharedPreferences.getInstance());
+    _preferencesService = service;
+    final statistics = await service.recordGameResult(
+      gameId: gameId,
+      humanWon: humanWon,
+    );
+    if (mounted) setState(() => _statistics = statistics);
+  }
+
+  Future<void> _resetStatistics() async {
+    final service =
+        _preferencesService ??
+        PreferencesService(await SharedPreferences.getInstance());
+    _preferencesService = service;
+    final statistics = await service.resetStatistics();
+    if (mounted) setState(() => _statistics = statistics);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return LocaleControllerScope(
-      locale: _locale,
-      setLocale: _setLocale,
-      child: MaterialApp(
-        onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.light(),
-        darkTheme: AppTheme.dark(),
-        themeMode: ThemeMode.system,
+    return PreferencesScope(
+      difficulty: _difficulty,
+      statistics: _statistics,
+      setDifficulty: _setDifficulty,
+      recordGameResult: _recordGameResult,
+      resetStatistics: _resetStatistics,
+      child: LocaleControllerScope(
         locale: _locale,
-        localizationsDelegates: const [
-          AppLocalizations.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: const [Locale('en'), Locale('vi')],
-        localeResolutionCallback: (locale, supportedLocales) {
-          if (locale?.languageCode == 'vi') return const Locale('vi');
-          return const Locale('en');
-        },
-        home: const HomeScreen(),
+        setLocale: _setLocale,
+        child: MaterialApp(
+          onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.light(),
+          darkTheme: AppTheme.dark(),
+          themeMode: ThemeMode.system,
+          locale: _locale,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [Locale('en'), Locale('vi')],
+          localeResolutionCallback: (locale, supportedLocales) {
+            if (locale?.languageCode == 'vi') return const Locale('vi');
+            return const Locale('en');
+          },
+          home: const HomeScreen(),
+        ),
       ),
     );
   }

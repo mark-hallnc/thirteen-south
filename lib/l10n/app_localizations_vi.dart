@@ -9,6 +9,66 @@ class AppLocalizationsVi extends AppLocalizations {
   AppLocalizationsVi([String locale = 'vi']) : super(locale);
 
   @override
+  String get difficulty => 'Độ khó';
+
+  @override
+  String get easy => 'Dễ';
+
+  @override
+  String get normal => 'Thường';
+
+  @override
+  String get hard => 'Khó';
+
+  @override
+  String get easyDescription =>
+      'Đối thủ thoải mái, thường chọn nước đi đơn giản.';
+
+  @override
+  String get normalDescription => 'Lối chơi cân bằng với chiến thuật cơ bản.';
+
+  @override
+  String get hardDescription =>
+      'Lối chơi thận trọng hơn với quyết định chiến thuật tốt hơn.';
+
+  @override
+  String get statistics => 'Thống kê';
+
+  @override
+  String get gamesPlayed => 'Số ván đã chơi';
+
+  @override
+  String get wins => 'Thắng';
+
+  @override
+  String get losses => 'Thua';
+
+  @override
+  String get winRate => 'Tỷ lệ thắng';
+
+  @override
+  String get currentStreak => 'Chuỗi thắng hiện tại';
+
+  @override
+  String get bestStreak => 'Chuỗi thắng tốt nhất';
+
+  @override
+  String get resetStatistics => 'Đặt lại thống kê';
+
+  @override
+  String get resetStatisticsTitle => 'Đặt lại thống kê?';
+
+  @override
+  String get resetStatisticsMessage =>
+      'Thao tác này sẽ xóa số ván thắng, thua và các chuỗi thắng. Ngôn ngữ và độ khó sẽ không thay đổi.';
+
+  @override
+  String get cancel => 'Hủy';
+
+  @override
+  String get reset => 'Đặt lại';
+
+  @override
   String get appTitle => 'Thirteen South: Tiến Lên';
 
   @override
