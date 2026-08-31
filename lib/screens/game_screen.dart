@@ -289,7 +289,7 @@ class _TableSurface extends StatelessWidget {
             left: 12,
             right: 12,
             child: SizedBox(
-              height: 110,
+              height: 145,
               child: opponent(opponents[1], OpponentPosition.top),
             ),
           ),
@@ -299,7 +299,7 @@ class _TableSurface extends StatelessWidget {
               padding: const EdgeInsets.only(left: 8),
               child: SizedBox(
                 width: 80,
-                height: 190,
+                height: 225,
                 child: opponent(opponents[0], OpponentPosition.left),
               ),
             ),
@@ -323,7 +323,7 @@ class _TableSurface extends StatelessWidget {
               padding: const EdgeInsets.only(right: 8),
               child: SizedBox(
                 width: 80,
-                height: 190,
+                height: 225,
                 child: opponent(opponents[2], OpponentPosition.right),
               ),
             ),

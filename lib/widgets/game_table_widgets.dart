@@ -22,7 +22,7 @@ class OpponentHand extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isTop = position == OpponentPosition.top;
-    final cardWidth = isTop ? 40.0 : 38.0;
+    final cardWidth = isTop ? 52.0 : 50.0;
     final cardHeight = cardWidth * 1.42;
     final laidOutWidth = isTop ? cardWidth : cardHeight;
     final laidOutHeight = isTop ? cardHeight : cardWidth;
@@ -162,7 +162,7 @@ class OpponentPanel extends StatelessWidget {
             children: [
               SizedBox(
                 width: double.infinity,
-                height: 57,
+                height: 74,
                 child: OpponentHand(
                   opponentId: opponentId,
                   cardCount: cardCount,
@@ -177,8 +177,8 @@ class OpponentPanel extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               SizedBox(
-                width: 54,
-                height: 130,
+                width: 76,
+                height: 165,
                 child: OpponentHand(
                   opponentId: opponentId,
                   cardCount: cardCount,

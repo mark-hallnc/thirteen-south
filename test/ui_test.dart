@@ -41,21 +41,25 @@ Widget localizedGame(GameEngine engine, {Duration aiDelay = Duration.zero}) {
   );
 }
 
-Widget opponentPanel({required int cardCount}) {
+Widget opponentPanel({
+  required int cardCount,
+  bool isPassed = false,
+  OpponentPosition position = OpponentPosition.top,
+}) {
   return MaterialApp(
     home: Scaffold(
       body: SizedBox(
         width: 300,
-        height: 110,
+        height: position == OpponentPosition.top ? 145 : 225,
         child: OpponentPanel(
           opponentId: 'test-opponent',
           name: 'Player 1',
           cardCount: cardCount,
           cardsLabel: 'cards',
           passedLabel: 'Passed',
-          isPassed: false,
+          isPassed: isPassed,
           isActive: false,
-          position: OpponentPosition.top,
+          position: position,
         ),
       ),
     ),
@@ -107,6 +111,49 @@ void main() {
 
     expect(find.byType(CardBackWidget), findsNWidgets(8));
     expect(find.text('8 cards'), findsOneWidget);
+  });
+
+  testWidgets('Top opponent Passed layouts fit at full and reduced hands', (
+    tester,
+  ) async {
+    for (final cardCount in [13, 5]) {
+      await tester.pumpWidget(
+        opponentPanel(cardCount: cardCount, isPassed: true),
+      );
+      await tester.pump();
+
+      expect(find.byType(CardBackWidget), findsNWidgets(cardCount));
+      expect(find.text('$cardCount cards'), findsOneWidget);
+      expect(find.text('Passed'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    }
+  });
+
+  testWidgets('Top and side opponent card backs use larger widths', (
+    tester,
+  ) async {
+    await tester.pumpWidget(opponentPanel(cardCount: 13));
+    expect(
+      tester.widgetList<CardBackWidget>(find.byType(CardBackWidget)),
+      everyElement(
+        isA<CardBackWidget>().having((widget) => widget.width, 'width', 52),
+      ),
+    );
+
+    for (final cardCount in [13, 5, 1]) {
+      await tester.pumpWidget(
+        opponentPanel(cardCount: cardCount, position: OpponentPosition.left),
+      );
+      await tester.pump();
+      expect(find.byType(CardBackWidget), findsNWidgets(cardCount));
+      expect(
+        tester.widgetList<CardBackWidget>(find.byType(CardBackWidget)),
+        everyElement(
+          isA<CardBackWidget>().having((widget) => widget.width, 'width', 50),
+        ),
+      );
+      expect(tester.takeException(), isNull);
+    }
   });
 
   testWidgets('Side opponent hands rotate every hidden card', (tester) async {
