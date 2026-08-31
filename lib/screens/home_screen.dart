@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tien_len/l10n/app_localizations.dart';
 
+import '../widgets/home_hero_graphic.dart';
 import 'game_screen.dart';
 import 'rules_screen.dart';
 import 'settings_screen.dart';
@@ -20,20 +21,8 @@ class HomeScreen extends StatelessWidget {
               constraints: const BoxConstraints(maxWidth: 420),
               child: Column(
                 children: [
-                  Container(
-                    width: 72,
-                    height: 88,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-                    child: Icon(
-                      Icons.style_rounded,
-                      size: 38,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
+                  const HomeHeroGraphic(),
+                  const SizedBox(height: 18),
                   Text(
                     loc.appTitle,
                     textAlign: TextAlign.center,
@@ -42,15 +31,7 @@ class HomeScreen extends StatelessWidget {
                       letterSpacing: -.8,
                     ),
                   ),
-                  const SizedBox(height: 6),
-                  Text(
-                    loc.southernVietnameseCardGame,
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                  const SizedBox(height: 42),
+                  const SizedBox(height: 32),
                   SizedBox(
                     width: double.infinity,
                     child: FilledButton.icon(

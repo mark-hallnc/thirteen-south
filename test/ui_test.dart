@@ -9,6 +9,7 @@ import 'package:tien_len/models/player.dart';
 import 'package:tien_len/models/playing_card.dart';
 import 'package:tien_len/screens/game_screen.dart';
 import 'package:tien_len/widgets/game_table_widgets.dart';
+import 'package:tien_len/widgets/home_hero_graphic.dart';
 import 'package:tien_len/widgets/playing_card_widget.dart';
 
 PlayingCard card(CardRank rank, CardSuit suit) => PlayingCard(rank, suit);
@@ -74,7 +75,11 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Thirteen South: Tiến Lên'), findsOneWidget);
     expect(find.byKey(const ValueKey('new-game-button')), findsOneWidget);
-    expect(find.text('Southern Vietnamese card game'), findsOneWidget);
+    expect(find.text('New Game'), findsOneWidget);
+    expect(find.text('Rules'), findsOneWidget);
+    expect(find.text('Settings'), findsOneWidget);
+    expect(find.byType(HomeHeroGraphic), findsOneWidget);
+    expect(find.text('Southern Vietnamese card game'), findsNothing);
   });
 
   testWidgets('New Game enters game screen and renders human cards', (
