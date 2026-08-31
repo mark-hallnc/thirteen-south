@@ -161,6 +161,26 @@ void main() {
     }
   });
 
+  testWidgets('Side opponent Passed layouts retain vertical safety margin', (
+    tester,
+  ) async {
+    for (final cardCount in [13, 1]) {
+      await tester.pumpWidget(
+        opponentPanel(
+          cardCount: cardCount,
+          isPassed: true,
+          position: OpponentPosition.left,
+        ),
+      );
+      await tester.pump();
+
+      expect(find.byType(CardBackWidget), findsNWidgets(cardCount));
+      expect(find.text('$cardCount cards'), findsOneWidget);
+      expect(find.text('Passed'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    }
+  });
+
   testWidgets('Side opponent hands rotate every hidden card', (tester) async {
     await tester.pumpWidget(
       const MaterialApp(

@@ -138,18 +138,26 @@ class OpponentPanel extends StatelessWidget {
               ),
             ),
           ),
-          Text(
-            '$cardCount $cardsLabel',
-            key: ValueKey('opponent-$opponentId-card-count'),
-            style: const TextStyle(color: Color(0xFFC5D7CE), fontSize: 11),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              '$cardCount $cardsLabel',
+              key: ValueKey('opponent-$opponentId-card-count'),
+              maxLines: 1,
+              style: const TextStyle(color: Color(0xFFC5D7CE), fontSize: 11),
+            ),
           ),
           if (isPassed)
-            Text(
-              passedLabel,
-              style: const TextStyle(
-                color: Color(0xFFFFC6C1),
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                passedLabel,
+                maxLines: 1,
+                style: const TextStyle(
+                  color: Color(0xFFFFC6C1),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
         ],
@@ -178,14 +186,14 @@ class OpponentPanel extends StatelessWidget {
             children: [
               SizedBox(
                 width: 76,
-                height: 165,
+                height: 160,
                 child: OpponentHand(
                   opponentId: opponentId,
                   cardCount: cardCount,
                   position: position,
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
               label(),
             ],
           );
