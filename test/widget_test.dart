@@ -1,6 +1,9 @@
+import 'dart:io';
 import 'dart:math';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:tien_len/game/deck.dart';
 import 'package:tien_len/game/game_engine.dart';
 import 'package:tien_len/game/hand_analyzer.dart';
@@ -8,8 +11,66 @@ import 'package:tien_len/game/move.dart';
 import 'package:tien_len/game/move_validator.dart';
 import 'package:tien_len/models/player.dart';
 import 'package:tien_len/models/playing_card.dart';
+import 'package:tien_len/widgets/playing_card_widget.dart';
 
 void main() {
+  testWidgets('Card widgets render individual SVG assets', (tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Row(
+          children: [
+            PlayingCardWidget(card: PlayingCard(CardRank.ace, CardSuit.clubs)),
+            CardBackWidget(),
+          ],
+        ),
+      ),
+    );
+    expect(find.byType(SvgPicture), findsNWidgets(2));
+  });
+
+  test('All cards map to existing unique individual SVG assets', () {
+    final cards = [
+      for (final rank in CardRank.values)
+        for (final suit in CardSuit.values) PlayingCard(rank, suit),
+    ];
+    final paths = cards.map((card) => card.assetPath).toSet();
+    expect(paths, hasLength(52));
+    expect(
+      paths.every((path) => path.startsWith('assets/cards/faces/')),
+      isTrue,
+    );
+    expect(paths.any((path) => path.contains('52-card-deck-front')), isFalse);
+    expect(paths.every((path) => File(path).existsSync()), isTrue);
+    expect(
+      PlayingCard(CardRank.three, CardSuit.spades).assetPath,
+      'assets/cards/faces/3_spades.svg',
+    );
+    expect(
+      PlayingCard(CardRank.ten, CardSuit.diamonds).assetPath,
+      'assets/cards/faces/10_diamonds.svg',
+    );
+    expect(
+      PlayingCard(CardRank.jack, CardSuit.clubs).assetPath,
+      'assets/cards/faces/jack_clubs.svg',
+    );
+    expect(
+      PlayingCard(CardRank.queen, CardSuit.hearts).assetPath,
+      'assets/cards/faces/queen_hearts.svg',
+    );
+    expect(
+      PlayingCard(CardRank.king, CardSuit.spades).assetPath,
+      'assets/cards/faces/king_spades.svg',
+    );
+    expect(
+      PlayingCard(CardRank.ace, CardSuit.clubs).assetPath,
+      'assets/cards/faces/ace_clubs.svg',
+    );
+    expect(
+      PlayingCard(CardRank.two, CardSuit.hearts).assetPath,
+      'assets/cards/faces/2_hearts.svg',
+    );
+  });
+
   group('Deck', () {
     test('Deck has exactly 52 cards', () {
       final deck = Deck();

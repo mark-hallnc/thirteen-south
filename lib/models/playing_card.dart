@@ -47,6 +47,33 @@ extension CardSuitX on CardSuit {
   };
 }
 
+extension PlayingCardAssetX on PlayingCard {
+  String get assetPath {
+    final rankName = switch (rank) {
+      CardRank.ace => 'ace',
+      CardRank.two => '2',
+      CardRank.three => '3',
+      CardRank.four => '4',
+      CardRank.five => '5',
+      CardRank.six => '6',
+      CardRank.seven => '7',
+      CardRank.eight => '8',
+      CardRank.nine => '9',
+      CardRank.ten => '10',
+      CardRank.jack => 'jack',
+      CardRank.queen => 'queen',
+      CardRank.king => 'king',
+    };
+    final suitName = switch (suit) {
+      CardSuit.clubs => 'clubs',
+      CardSuit.diamonds => 'diamonds',
+      CardSuit.hearts => 'hearts',
+      CardSuit.spades => 'spades',
+    };
+    return 'assets/cards/faces/${rankName}_$suitName.svg';
+  }
+}
+
 class PlayingCard implements Comparable<PlayingCard> {
   const PlayingCard(this.rank, this.suit);
 

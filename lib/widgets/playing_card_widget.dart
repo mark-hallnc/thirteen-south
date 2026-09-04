@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../models/playing_card.dart';
 
@@ -18,9 +19,6 @@ class PlayingCardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isRed =
-        card.suit == CardSuit.hearts || card.suit == CardSuit.diamonds;
-    final suitColor = isRed ? const Color(0xFFB3261E) : const Color(0xFF202421);
     final height = width * 1.42;
     final radius = width * .12;
 
@@ -38,14 +36,13 @@ class PlayingCardWidget extends StatelessWidget {
             width: width,
             height: height,
             decoration: BoxDecoration(
-              color: const Color(0xFFFFFBF5),
               borderRadius: BorderRadius.circular(radius),
-              border: Border.all(
-                width: selected ? 2.2 : 1,
-                color: selected
-                    ? Theme.of(context).colorScheme.tertiary
-                    : const Color(0xFFCBD0CB),
-              ),
+              border: selected
+                  ? Border.all(
+                      width: 2.2,
+                      color: Theme.of(context).colorScheme.tertiary,
+                    )
+                  : null,
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: selected ? .22 : .13),
@@ -54,111 +51,21 @@ class PlayingCardWidget extends StatelessWidget {
                 ),
               ],
             ),
-            child: Padding(
-              padding: EdgeInsets.all(width * .075),
-              child: Stack(
-                children: [
-                  Align(
-                    alignment: Alignment.topLeft,
-                    child: _CardIndex(
-                      rank: card.rankDisplay,
-                      suit: card.suitDisplay,
-                      color: suitColor,
-                      width: width,
-                    ),
-                  ),
-                  Center(
-                    child:
-                        card.rank == CardRank.jack ||
-                            card.rank == CardRank.queen ||
-                            card.rank == CardRank.king
-                        ? Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                card.rankDisplay,
-                                style: TextStyle(
-                                  height: .9,
-                                  fontSize: width * .48,
-                                  fontWeight: FontWeight.w900,
-                                  fontFamily: 'serif',
-                                  color: suitColor,
-                                ),
-                              ),
-                              Text(
-                                card.suitDisplay,
-                                style: TextStyle(
-                                  height: .9,
-                                  fontSize: width * .3,
-                                  color: suitColor,
-                                ),
-                              ),
-                            ],
-                          )
-                        : Text(
-                            card.suitDisplay,
-                            style: TextStyle(
-                              fontSize: width * .5,
-                              color: suitColor,
-                              height: 1,
-                            ),
-                          ),
-                  ),
-                  Align(
-                    alignment: Alignment.bottomRight,
-                    child: RotatedBox(
-                      quarterTurns: 2,
-                      child: _CardIndex(
-                        rank: card.rankDisplay,
-                        suit: card.suitDisplay,
-                        color: suitColor,
-                        width: width,
-                      ),
-                    ),
-                  ),
-                ],
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(radius),
+              child: SizedBox(
+                width: width,
+                height: height,
+                child: SvgPicture.asset(
+                  card.assetPath,
+                  width: width,
+                  fit: BoxFit.contain,
+                ),
               ),
             ),
           ),
         ),
       ),
-    );
-  }
-}
-
-class _CardIndex extends StatelessWidget {
-  const _CardIndex({
-    required this.rank,
-    required this.suit,
-    required this.color,
-    required this.width,
-  });
-
-  final String rank;
-  final String suit;
-  final Color color;
-  final double width;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          rank,
-          style: TextStyle(
-            height: .82,
-            fontSize: width * .25,
-            fontWeight: FontWeight.w900,
-            fontFamily: 'serif',
-            color: color,
-          ),
-        ),
-        Text(
-          suit,
-          style: TextStyle(height: .9, fontSize: width * .19, color: color),
-        ),
-      ],
     );
   }
 }
@@ -175,9 +82,7 @@ class CardBackWidget extends StatelessWidget {
       width: width,
       height: height,
       decoration: BoxDecoration(
-        color: const Color(0xFF244D58),
         borderRadius: BorderRadius.circular(width * .12),
-        border: Border.all(color: const Color(0xFFE5ECE8), width: 1.4),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: .18),
@@ -186,27 +91,11 @@ class CardBackWidget extends StatelessWidget {
           ),
         ],
       ),
-      padding: EdgeInsets.all(width * .12),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(width * .06),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: .58),
-            width: 1.1,
-          ),
-        ),
-        child: Center(
-          child: Transform.rotate(
-            angle: .78,
-            child: Container(
-              width: width * .22,
-              height: width * .22,
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.white.withValues(alpha: .58)),
-              ),
-            ),
-          ),
-        ),
+      clipBehavior: Clip.antiAlias,
+      child: SvgPicture.asset(
+        'assets/cards/back.svg',
+        width: width,
+        fit: BoxFit.contain,
       ),
     );
   }
