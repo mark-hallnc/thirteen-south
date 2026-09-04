@@ -5,6 +5,7 @@ import 'package:tien_len/l10n/app_localizations.dart';
 
 import '../game/game_engine.dart';
 import '../game/move_validator.dart';
+import '../audio/game_sounds.dart';
 import '../models/player.dart';
 import '../models/playing_card.dart';
 import '../preferences_scope.dart';
@@ -28,6 +29,7 @@ class GameScreen extends StatefulWidget {
 class _GameScreenState extends State<GameScreen> {
   late final GameEngine _engine;
   final Set<PlayingCard> _selected = <PlayingCard>{};
+  final GameSounds _sounds = GameSounds();
   int _aiRun = 0;
   Timer? _aiTimer;
   bool _resultRecorded = false;
@@ -43,6 +45,7 @@ class _GameScreenState extends State<GameScreen> {
   void dispose() {
     _aiRun++;
     _aiTimer?.cancel();
+    unawaited(_sounds.dispose());
     super.dispose();
   }
 
@@ -67,7 +70,13 @@ class _GameScreenState extends State<GameScreen> {
     _aiTimer = Timer(widget.aiDelay, () {
       _aiTimer = null;
       if (!mounted || run != _aiRun || !_engine.state.isActive) return;
-      setState(_engine.performAiTurn);
+      final aiPlayer = _engine.state.currentPlayer;
+      final cardsBefore = aiPlayer.cardsRemaining;
+      MoveValidationResult? result;
+      setState(() => result = _engine.performAiTurn());
+      if (result!.isValid && aiPlayer.cardsRemaining < cardsBefore) {
+        unawaited(_sounds.playCardPlaced());
+      }
       _recordResult();
       _runAiTurns();
     });
@@ -77,6 +86,7 @@ class _GameScreenState extends State<GameScreen> {
     setState(() {
       _selected.contains(card) ? _selected.remove(card) : _selected.add(card);
     });
+    unawaited(_sounds.playCardSelected());
   }
 
   void _play() {
@@ -85,6 +95,7 @@ class _GameScreenState extends State<GameScreen> {
       _selected.toList(),
     );
     if (result.isValid) {
+      unawaited(_sounds.playCardPlaced());
       setState(_selected.clear);
       _recordResult();
       _runAiTurns();

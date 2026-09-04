@@ -32,6 +32,21 @@ void main() {
     );
   });
 
+  testWidgets('Card taps disable Material feedback', (tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: PlayingCardWidget(
+          card: PlayingCard(CardRank.two, CardSuit.hearts),
+        ),
+      ),
+    );
+
+    expect(
+      tester.widget<InkWell>(find.byType(InkWell)).enableFeedback,
+      isFalse,
+    );
+  });
+
   test('All cards map to existing unique individual PNG assets', () {
     final cards = [
       for (final rank in CardRank.values)

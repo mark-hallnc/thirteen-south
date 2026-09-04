@@ -30,6 +30,7 @@ class PlayingCardWidget extends StatelessWidget {
         child: InkWell(
           key: ValueKey('card-${card.rank.name}-${card.suit.name}'),
           onTap: onTap,
+          enableFeedback: false,
           borderRadius: BorderRadius.circular(radius),
           child: Ink(
             width: width,
