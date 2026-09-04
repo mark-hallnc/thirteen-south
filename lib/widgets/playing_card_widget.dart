@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 import '../models/playing_card.dart';
 
@@ -56,10 +55,11 @@ class PlayingCardWidget extends StatelessWidget {
               child: SizedBox(
                 width: width,
                 height: height,
-                child: SvgPicture.asset(
+                child: Image.asset(
                   card.assetPath,
                   width: width,
                   fit: BoxFit.contain,
+                  filterQuality: FilterQuality.high,
                 ),
               ),
             ),
@@ -92,10 +92,11 @@ class CardBackWidget extends StatelessWidget {
         ],
       ),
       clipBehavior: Clip.antiAlias,
-      child: SvgPicture.asset(
-        'assets/cards/back.svg',
+      child: Image.asset(
+        'assets/cards_png/back.png',
         width: width,
         fit: BoxFit.contain,
+        filterQuality: FilterQuality.high,
       ),
     );
   }

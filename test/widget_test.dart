@@ -3,7 +3,6 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:tien_len/game/deck.dart';
 import 'package:tien_len/game/game_engine.dart';
 import 'package:tien_len/game/hand_analyzer.dart';
@@ -14,7 +13,7 @@ import 'package:tien_len/models/playing_card.dart';
 import 'package:tien_len/widgets/playing_card_widget.dart';
 
 void main() {
-  testWidgets('Card widgets render individual SVG assets', (tester) async {
+  testWidgets('Card widgets render individual PNG assets', (tester) async {
     await tester.pumpWidget(
       const MaterialApp(
         home: Row(
@@ -25,10 +24,15 @@ void main() {
         ),
       ),
     );
-    expect(find.byType(SvgPicture), findsNWidgets(2));
+    expect(find.byType(Image), findsNWidgets(2));
+    expect(
+      (tester.widgetList<Image>(find.byType(Image)).last.image as AssetImage)
+          .assetName,
+      'assets/cards_png/back.png',
+    );
   });
 
-  test('All cards map to existing unique individual SVG assets', () {
+  test('All cards map to existing unique individual PNG assets', () {
     final cards = [
       for (final rank in CardRank.values)
         for (final suit in CardSuit.values) PlayingCard(rank, suit),
@@ -36,38 +40,39 @@ void main() {
     final paths = cards.map((card) => card.assetPath).toSet();
     expect(paths, hasLength(52));
     expect(
-      paths.every((path) => path.startsWith('assets/cards/faces/')),
+      paths.every((path) => path.startsWith('assets/cards_png/faces/')),
       isTrue,
     );
-    expect(paths.any((path) => path.contains('52-card-deck-front')), isFalse);
+    expect(paths.every((path) => path.endsWith('.png')), isTrue);
+    expect(paths.any((path) => path.endsWith('.svg')), isFalse);
     expect(paths.every((path) => File(path).existsSync()), isTrue);
     expect(
       PlayingCard(CardRank.three, CardSuit.spades).assetPath,
-      'assets/cards/faces/3_spades.svg',
+      'assets/cards_png/faces/3_spades.png',
     );
     expect(
       PlayingCard(CardRank.ten, CardSuit.diamonds).assetPath,
-      'assets/cards/faces/10_diamonds.svg',
+      'assets/cards_png/faces/10_diamonds.png',
     );
     expect(
       PlayingCard(CardRank.jack, CardSuit.clubs).assetPath,
-      'assets/cards/faces/jack_clubs.svg',
+      'assets/cards_png/faces/jack_clubs.png',
     );
     expect(
       PlayingCard(CardRank.queen, CardSuit.hearts).assetPath,
-      'assets/cards/faces/queen_hearts.svg',
+      'assets/cards_png/faces/queen_hearts.png',
     );
     expect(
       PlayingCard(CardRank.king, CardSuit.spades).assetPath,
-      'assets/cards/faces/king_spades.svg',
+      'assets/cards_png/faces/king_spades.png',
     );
     expect(
       PlayingCard(CardRank.ace, CardSuit.clubs).assetPath,
-      'assets/cards/faces/ace_clubs.svg',
+      'assets/cards_png/faces/ace_clubs.png',
     );
     expect(
       PlayingCard(CardRank.two, CardSuit.hearts).assetPath,
-      'assets/cards/faces/2_hearts.svg',
+      'assets/cards_png/faces/2_hearts.png',
     );
   });
 

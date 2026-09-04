@@ -70,7 +70,7 @@ extension PlayingCardAssetX on PlayingCard {
       CardSuit.hearts => 'hearts',
       CardSuit.spades => 'spades',
     };
-    return 'assets/cards/faces/${rankName}_$suitName.svg';
+    return 'assets/cards_png/faces/${rankName}_$suitName.png';
   }
 }
 
