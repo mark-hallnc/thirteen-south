@@ -185,16 +185,19 @@ class OpponentPanel extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               SizedBox(
-                width: 76,
-                height: 160,
-                child: OpponentHand(
-                  opponentId: opponentId,
-                  cardCount: cardCount,
-                  position: position,
-                ),
-              ),
-              const SizedBox(height: 2),
-              label(),
+  width: 76,
+  height: 156,
+  child: OpponentHand(
+    opponentId: opponentId,
+    cardCount: cardCount,
+    position: position,
+  ),
+),
+const SizedBox(height: 2),
+SizedBox(
+  height: 64,
+  child: label(),
+),
             ],
           );
     return Semantics(

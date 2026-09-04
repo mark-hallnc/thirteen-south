@@ -100,6 +100,23 @@ class SettingsScreen extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             Text(
+              loc.sound,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Card(
+              child: SwitchListTile(
+                key: const ValueKey('sounds-enabled'),
+                title: Text(loc.soundEffects),
+                subtitle: Text(loc.soundEffectsDescription),
+                value: preferences.soundsEnabled,
+                onChanged: preferences.setSoundsEnabled,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
               loc.statistics,
               style: Theme.of(
                 context,

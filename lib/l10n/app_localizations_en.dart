@@ -220,4 +220,13 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get rulesChoppingBody =>
       'Four of a kind or three consecutive pairs can chop one 2. Four consecutive pairs chop two 2s, and five consecutive pairs chop three 2s. A passed player may still chop when their turn arrives.';
+
+  @override
+  String get sound => 'Sound';
+
+  @override
+  String get soundEffects => 'Sound effects';
+
+  @override
+  String get soundEffectsDescription => 'Play sounds during games';
 }

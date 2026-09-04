@@ -1,6 +1,11 @@
 import 'package:audioplayers/audioplayers.dart';
 
 class GameSounds {
+  bool _enabled = true;
+  bool get enabled => _enabled;
+
+  void setEnabled(bool enabled) => _enabled = enabled;
+
   final AudioPlayer _cardSelectedPlayer = AudioPlayer();
   final AudioPlayer _cardPlacedPlayer = AudioPlayer();
   final AudioPlayer _gameWinPlayer = AudioPlayer();
@@ -21,6 +26,7 @@ class GameSounds {
       _play(_invalidPlayPlayer, 'audio/invalid_play.wav');
 
   Future<void> _play(AudioPlayer player, String assetPath) async {
+    if (!_enabled) return;
     try {
       await player.play(AssetSource(assetPath));
     } catch (_) {

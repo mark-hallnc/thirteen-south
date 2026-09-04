@@ -28,6 +28,7 @@ class TienLenApp extends StatefulWidget {
 class _TienLenAppState extends State<TienLenApp> {
   static const _localeKey = 'app_locale';
   Locale? _locale;
+  bool _soundsEnabled = true;
   AiDifficulty _difficulty = AiDifficulty.normal;
   GameStatistics _statistics = const GameStatistics();
   PreferencesService? _preferencesService;
@@ -46,6 +47,7 @@ class _TienLenAppState extends State<TienLenApp> {
     setState(() {
       _preferencesService = service;
       _difficulty = service.loadDifficulty();
+      _soundsEnabled = service.loadSoundsEnabled();
       _statistics = service.loadStatistics();
       if (value != null && value != 'system') _locale = Locale(value);
     });
@@ -55,6 +57,14 @@ class _TienLenAppState extends State<TienLenApp> {
     setState(() => _locale = locale);
     final preferences = await SharedPreferences.getInstance();
     await preferences.setString(_localeKey, locale?.languageCode ?? 'system');
+  }
+
+  Future<void> _setSoundsEnabled(bool enabled) async {
+    setState(() => _soundsEnabled = enabled);
+    final service = _preferencesService ??
+        PreferencesService(await SharedPreferences.getInstance());
+    _preferencesService = service;
+    await service.saveSoundsEnabled(enabled);
   }
 
   Future<void> _setDifficulty(AiDifficulty difficulty) async {
@@ -91,6 +101,8 @@ class _TienLenAppState extends State<TienLenApp> {
   Widget build(BuildContext context) {
     return PreferencesScope(
       difficulty: _difficulty,
+      soundsEnabled: _soundsEnabled,
+      setSoundsEnabled: _setSoundsEnabled,
       statistics: _statistics,
       setDifficulty: _setDifficulty,
       recordGameResult: _recordGameResult,

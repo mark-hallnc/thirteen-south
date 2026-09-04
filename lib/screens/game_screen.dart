@@ -30,6 +30,7 @@ class _GameScreenState extends State<GameScreen> {
   late final GameEngine _engine;
   final Set<PlayingCard> _selected = <PlayingCard>{};
   final GameSounds _sounds = GameSounds();
+  List<PlayingCard> _humanCardOrder = [];
   int _aiRun = 0;
   Timer? _aiTimer;
   bool _resultRecorded = false;
@@ -39,6 +40,7 @@ class _GameScreenState extends State<GameScreen> {
   void initState() {
     super.initState();
     _engine = widget.engine ?? (GameEngine()..startNewGame());
+    _humanCardOrder = List.of(_engine.players.first.hand);
     WidgetsBinding.instance.addPostFrameCallback((_) => _runAiTurns());
   }
 
@@ -54,6 +56,7 @@ class _GameScreenState extends State<GameScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     final preferences = PreferencesScope.maybeOf(context);
+    _sounds.setEnabled(preferences?.soundsEnabled ?? true);
     if (preferences != null) _engine.difficulty = preferences.difficulty;
     if (_engine.state.winner != null && !_resultRecorded) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _recordResult());
@@ -90,6 +93,22 @@ class _GameScreenState extends State<GameScreen> {
     unawaited(_sounds.playCardSelected());
   }
 
+  void _syncHumanCardOrder() {
+    final hand = _engine.players.first.hand;
+    _humanCardOrder.removeWhere((card) => !hand.contains(card));
+    for (final card in hand) {
+      if (!_humanCardOrder.contains(card)) _humanCardOrder.add(card);
+    }
+  }
+
+  // newIndex is the final index after removing the dragged card.
+  void _reorderHand(int oldIndex, int newIndex) {
+    setState(() {
+      final card = _humanCardOrder.removeAt(oldIndex);
+      _humanCardOrder.insert(newIndex, card);
+    });
+  }
+
   void _play() {
     final result = _engine.playCards(
       _engine.players.first.id,
@@ -97,7 +116,10 @@ class _GameScreenState extends State<GameScreen> {
     );
     if (result.isValid) {
       unawaited(_sounds.playCardPlaced());
-      setState(_selected.clear);
+      setState(() {
+        _selected.clear();
+        _syncHumanCardOrder();
+      });
       _recordResult();
       _runAiTurns();
     } else {
@@ -125,6 +147,7 @@ class _GameScreenState extends State<GameScreen> {
       _resultRecorded = false;
       _resultSoundPlayed = false;
       _engine.startNewGame();
+      _humanCardOrder = List.of(_engine.players.first.hand);
     });
     _runAiTurns();
   }
@@ -262,7 +285,8 @@ class _GameScreenState extends State<GameScreen> {
                   color: Theme.of(context).colorScheme.surface,
                   padding: const EdgeInsets.fromLTRB(8, 0, 8, 3),
                   child: PlayerHand(
-                    cards: human.hand,
+                    cards: _humanCardOrder,
+                    onReorder: state.isActive ? _reorderHand : null,
                     selectedCards: _selected,
                     onCardTap: _toggleCard,
                     enabled: humanTurn,

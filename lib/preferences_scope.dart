@@ -7,6 +7,8 @@ class PreferencesScope extends InheritedWidget {
   const PreferencesScope({
     super.key,
     required this.difficulty,
+    required this.soundsEnabled,
+    required this.setSoundsEnabled,
     required this.statistics,
     required this.setDifficulty,
     required this.recordGameResult,
@@ -15,6 +17,8 @@ class PreferencesScope extends InheritedWidget {
   });
 
   final AiDifficulty difficulty;
+  final bool soundsEnabled;
+  final Future<void> Function(bool enabled) setSoundsEnabled;
   final GameStatistics statistics;
   final Future<void> Function(AiDifficulty difficulty) setDifficulty;
   final Future<void> Function(String gameId, bool humanWon) recordGameResult;
@@ -28,5 +32,6 @@ class PreferencesScope extends InheritedWidget {
 
   @override
   bool updateShouldNotify(PreferencesScope oldWidget) =>
+      soundsEnabled != oldWidget.soundsEnabled ||
       difficulty != oldWidget.difficulty || statistics != oldWidget.statistics;
 }

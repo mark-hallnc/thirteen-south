@@ -8,6 +8,13 @@ class PreferencesService {
 
   final SharedPreferences _preferences;
 
+  static const soundsEnabledKey = 'sounds_enabled';
+
+  bool loadSoundsEnabled() => _preferences.getBool(soundsEnabledKey) ?? true;
+
+  Future<void> saveSoundsEnabled(bool enabled) =>
+      _preferences.setBool(soundsEnabledKey, enabled);
+
   static const difficultyKey = 'ai_difficulty';
   static const gamesPlayedKey = 'games_played';
   static const winsKey = 'wins';

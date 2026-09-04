@@ -487,6 +487,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Four of a kind or three consecutive pairs can chop one 2. Four consecutive pairs chop two 2s, and five consecutive pairs chop three 2s. A passed player may still chop when their turn arrives.'**
   String get rulesChoppingBody;
+
+  /// No description provided for @sound.
+  ///
+  /// In en, this message translates to:
+  /// **'Sound'**
+  String get sound;
+
+  /// No description provided for @soundEffects.
+  ///
+  /// In en, this message translates to:
+  /// **'Sound effects'**
+  String get soundEffects;
+
+  /// No description provided for @soundEffectsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Play sounds during games'**
+  String get soundEffectsDescription;
 }
 
 class _AppLocalizationsDelegate

@@ -1,0 +1,146 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:tien_len/ai/ai_difficulty.dart';
+import 'package:tien_len/main.dart';
+import 'package:tien_len/models/game_statistics.dart';
+import 'package:tien_len/models/playing_card.dart';
+import 'package:tien_len/preferences_scope.dart';
+import 'package:tien_len/services/preferences_service.dart';
+import 'package:tien_len/widgets/player_hand.dart';
+
+import 'ui_test.dart' show humanLeadEngine, localizedGame;
+
+void main() {
+  setUp(() => SharedPreferences.setMockInitialValues({}));
+
+  test('sounds default on and both values survive store reload', () async {
+    final preferences = await SharedPreferences.getInstance();
+    final service = PreferencesService(preferences);
+    expect(service.loadSoundsEnabled(), isTrue);
+    for (final value in [false, true]) {
+      await service.saveSoundsEnabled(value);
+      await preferences.reload();
+      expect(PreferencesService(preferences).loadSoundsEnabled(), value);
+      expect(preferences.getBool('sounds_enabled'), value);
+    }
+  });
+
+  testWidgets('sound changes notify scope dependents', (tester) async {
+    var enabled = true;
+    late StateSetter update;
+    var builds = 0;
+    final child = Builder(builder: (context) {
+      builds++;
+      return Text('${PreferencesScope.of(context).soundsEnabled}');
+    });
+    await tester.pumpWidget(MaterialApp(home: StatefulBuilder(
+      builder: (context, setState) {
+        update = setState;
+        return PreferencesScope(
+          difficulty: AiDifficulty.normal,
+          statistics: const GameStatistics(),
+          soundsEnabled: enabled,
+          setSoundsEnabled: (_) async {},
+          setDifficulty: (_) async {},
+          recordGameResult: (_, _) async {},
+          resetStatistics: () async {},
+          child: child,
+        );
+      },
+    )));
+    final before = builds;
+    update(() => enabled = false);
+    await tester.pump();
+    expect(builds, before + 1);
+    expect(find.text('false'), findsOneWidget);
+    update(() => enabled = false);
+    await tester.pump();
+    expect(builds, before + 1);
+  });
+
+  testWidgets('sound switch reflects persisted value and updates it', (tester) async {
+    SharedPreferences.setMockInitialValues({'sounds_enabled': false});
+    await tester.pumpWidget(const TienLenApp());
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Settings'));
+    await tester.pumpAndSettle();
+    final toggle = find.byKey(const ValueKey('sounds-enabled'));
+    await tester.scrollUntilVisible(toggle, 200);
+    expect(tester.widget<SwitchListTile>(toggle).value, isFalse);
+    await tester.tap(toggle);
+    await tester.pumpAndSettle();
+    expect(tester.widget<SwitchListTile>(toggle).value, isTrue);
+    expect((await SharedPreferences.getInstance()).getBool('sounds_enabled'), isTrue);
+  });
+
+  testWidgets('display order preserves engine order, plays, and resets', (tester) async {
+    final engine = humanLeadEngine();
+    engine.players.first.replaceHand([
+      const PlayingCard(CardRank.three, CardSuit.spades),
+      const PlayingCard(CardRank.four, CardSuit.clubs),
+      const PlayingCard(CardRank.five, CardSuit.hearts),
+      const PlayingCard(CardRank.seven, CardSuit.spades),
+    ]);
+    final original = List<PlayingCard>.of(engine.players.first.hand);
+    await tester.pumpWidget(localizedGame(engine, aiDelay: const Duration(hours: 1)));
+    PlayerHand hand() => tester.widget<PlayerHand>(find.byType(PlayerHand));
+    expect(hand().cards, original);
+    hand().onReorder!(3, 1);
+    await tester.pump();
+    expect(hand().cards, [original[0], original[3], original[1], original[2]]);
+    expect(engine.players.first.hand, original);
+    hand().onReorder!(1, 3);
+    await tester.pump();
+    expect(hand().cards, original);
+    hand().onReorder!(3, 1);
+    await tester.pump();
+    hand().onCardTap(original[0]);
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('play-button')));
+    await tester.pump();
+    expect(hand().cards, [original[3], original[1], original[2]]);
+    expect(engine.players.first.hand, original.skip(1).toList());
+    await tester.tap(find.byIcon(Icons.refresh_rounded));
+    await tester.pump();
+    expect(hand().cards, engine.players.first.hand);
+    expect(hand().cards, hasLength(13));
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('horizontal drag reorders without selecting; taps still select', (tester) async {
+    final cards = [
+      for (final rank in [CardRank.three, CardRank.four, CardRank.five, CardRank.six])
+        PlayingCard(rank, CardSuit.spades),
+    ];
+    final selected = <PlayingCard>{};
+    final last = cards.last;
+    await tester.pumpWidget(MaterialApp(home: Scaffold(body: Center(
+      child: SizedBox(width: 300, child: StatefulBuilder(builder: (context, update) {
+        return PlayerHand(
+          cards: cards,
+          selectedCards: selected,
+          enabled: true,
+          onCardTap: (card) => update(() {
+            selected.contains(card) ? selected.remove(card) : selected.add(card);
+          }),
+          onReorder: (oldIndex, newIndex) => update(() {
+            cards.insert(newIndex, cards.removeAt(oldIndex));
+          }),
+        );
+      })),
+    ))));
+    final target = find.byKey(ValueKey(last));
+    await tester.drag(target, const Offset(-110, 0));
+    await tester.pumpAndSettle();
+    expect(cards.indexOf(last), lessThan(3));
+    expect(selected, isEmpty);
+    final exposedCorner = tester.getTopLeft(target) + const Offset(8, 20);
+    await tester.tapAt(exposedCorner);
+    await tester.pumpAndSettle();
+    expect(selected, contains(last));
+    await tester.tapAt(tester.getTopLeft(target) + const Offset(8, 20));
+    await tester.pumpAndSettle();
+    expect(selected, isEmpty);
+  });
+}

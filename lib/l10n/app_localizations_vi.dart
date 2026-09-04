@@ -218,4 +218,13 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get rulesChoppingBody =>
       'Tứ quý hoặc ba đôi thông chặt một lá 2. Bốn đôi thông chặt đôi 2, năm đôi thông chặt ba lá 2. Người đã bỏ lượt vẫn có thể chặt khi đến lượt.';
+
+  @override
+  String get sound => 'Âm thanh';
+
+  @override
+  String get soundEffects => 'Hiệu ứng âm thanh';
+
+  @override
+  String get soundEffectsDescription => 'Phát âm thanh khi chơi';
 }
