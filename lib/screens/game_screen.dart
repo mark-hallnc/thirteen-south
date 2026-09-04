@@ -33,6 +33,7 @@ class _GameScreenState extends State<GameScreen> {
   int _aiRun = 0;
   Timer? _aiTimer;
   bool _resultRecorded = false;
+  bool _resultSoundPlayed = false;
 
   @override
   void initState() {
@@ -100,6 +101,7 @@ class _GameScreenState extends State<GameScreen> {
       _recordResult();
       _runAiTurns();
     } else {
+      if (_selected.isNotEmpty) unawaited(_sounds.playInvalidPlay());
       _showError(result.reason);
     }
   }
@@ -121,6 +123,7 @@ class _GameScreenState extends State<GameScreen> {
     setState(() {
       _selected.clear();
       _resultRecorded = false;
+      _resultSoundPlayed = false;
       _engine.startNewGame();
     });
     _runAiTurns();
@@ -129,6 +132,12 @@ class _GameScreenState extends State<GameScreen> {
   void _recordResult() {
     final winner = _engine.state.winner;
     if (winner == null || _resultRecorded) return;
+    if (!_resultSoundPlayed) {
+      _resultSoundPlayed = true;
+      unawaited(
+        winner.isHuman ? _sounds.playGameWin() : _sounds.playGameLost(),
+      );
+    }
     _resultRecorded = true;
     final preferences = PreferencesScope.maybeOf(context);
     if (preferences != null) {
