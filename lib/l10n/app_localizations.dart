@@ -98,6 +98,24 @@ abstract class AppLocalizations {
     Locale('vi'),
   ];
 
+  /// No description provided for @leaveGameTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave game?'**
+  String get leaveGameTitle;
+
+  /// No description provided for @leaveGameMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your current game will be lost.'**
+  String get leaveGameMessage;
+
+  /// No description provided for @leave.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave'**
+  String get leave;
+
   /// No description provided for @difficulty.
   ///
   /// In en, this message translates to:

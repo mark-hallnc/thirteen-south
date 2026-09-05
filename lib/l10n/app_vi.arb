@@ -1,4 +1,7 @@
 {
+  "leaveGameTitle": "Rời ván chơi?",
+  "leaveGameMessage": "Bạn sẽ mất ván chơi hiện tại.",
+  "leave": "Rời ván",
   "@@locale": "vi",
   "difficulty": "Độ khó",
   "easy": "Dễ",

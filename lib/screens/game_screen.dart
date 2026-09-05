@@ -31,6 +31,40 @@ class _GameScreenState extends State<GameScreen> {
   late final GameEngine _engine;
   final Set<PlayingCard> _selected = <PlayingCard>{};
   final GameSounds _sounds = GameSounds();
+  bool _leaveDialogOpen = false;
+
+  Future<void> _confirmLeave() async {
+    if (_leaveDialogOpen) return;
+    _leaveDialogOpen = true;
+    final loc = AppLocalizations.of(context)!;
+    try {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text(loc.leaveGameTitle),
+          content: Text(loc.leaveGameMessage),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(loc.cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text(loc.leave),
+            ),
+          ],
+        ),
+      );
+      if (!mounted || confirmed != true) return;
+      // The dialog has closed. Pop this route directly, bypassing maybePop's
+      // active-game veto; the successful callback returns without prompting.
+      if (ModalRoute.of(context)?.isCurrent == true) {
+        Navigator.of(context).pop();
+      }
+    } finally {
+      _leaveDialogOpen = false;
+    }
+  }
   List<PlayingCard> _humanCardOrder = [];
   int _aiRun = 0;
   Timer? _aiTimer;
@@ -196,7 +230,13 @@ class _GameScreenState extends State<GameScreen> {
     final human = _engine.players.first;
     final humanTurn = state.isActive && state.currentPlayer == human;
 
-    return Scaffold(
+    return PopScope<void>(
+      canPop: !state.isActive,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        unawaited(_confirmLeave());
+      },
+      child: Scaffold(
       appBar: AppBar(
         title: Text(loc.appTitle),
         actions: [
@@ -317,6 +357,7 @@ class _GameScreenState extends State<GameScreen> {
               ),
           ],
         ),
+      ),
       ),
     );
   }

@@ -9,6 +9,15 @@ class AppLocalizationsVi extends AppLocalizations {
   AppLocalizationsVi([String locale = 'vi']) : super(locale);
 
   @override
+  String get leaveGameTitle => 'Rời ván chơi?';
+
+  @override
+  String get leaveGameMessage => 'Bạn sẽ mất ván chơi hiện tại.';
+
+  @override
+  String get leave => 'Rời ván';
+
+  @override
   String get difficulty => 'Độ khó';
 
   @override

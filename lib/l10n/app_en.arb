@@ -1,4 +1,7 @@
 {
+  "leaveGameTitle": "Leave game?",
+  "leaveGameMessage": "Your current game will be lost.",
+  "leave": "Leave",
   "@@locale": "en",
   "difficulty": "Difficulty",
   "easy": "Easy",

@@ -41,6 +41,7 @@ void main() {
       await tester.tap(find.byIcon(Icons.tune_rounded));
       await tester.pumpAndSettle();
       expect(find.byType(SettingsScreen), findsOneWidget);
+      expect(find.byType(AlertDialog), findsNothing);
       final toggle = find.byKey(const ValueKey('sounds-enabled'));
       await tester.scrollUntilVisible(toggle, 200);
       await tester.tap(toggle);
@@ -50,6 +51,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(GameScreen), findsOneWidget);
+      expect(find.byType(AlertDialog), findsNothing);
       expect(tester.state(find.byType(GameScreen)), same(screenState));
       expect(engine.state, same(gameState));
       expect(engine.gameId, gameId);
@@ -63,6 +65,68 @@ void main() {
       );
     }
     await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('active back cancels safely or leaves without recording a loss', (
+    tester,
+  ) async {
+    await tester.pumpWidget(const TienLenApp());
+    await tester.pumpAndSettle();
+    final engine = humanLeadEngine();
+    final gameId = engine.gameId;
+    final state = engine.state;
+    final navigator = tester.state<NavigatorState>(find.byType(Navigator));
+    navigator.push<void>(
+      MaterialPageRoute<void>(builder: (_) => GameScreen(engine: engine)),
+    );
+    await tester.pumpAndSettle();
+    final screenState = tester.state(find.byType(GameScreen));
+    final hand = tester.widget<PlayerHand>(find.byType(PlayerHand));
+    hand.onReorder!(0, 1);
+    hand.onCardTap(engine.players.first.hand.first);
+    await tester.pumpAndSettle();
+    final order = List<PlayingCard>.of(hand.cards);
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    expect(find.text('Leave game?'), findsOneWidget);
+    expect(find.byType(AlertDialog), findsOneWidget);
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+    expect(tester.state(find.byType(GameScreen)), same(screenState));
+    expect(engine.state, same(state));
+    expect(engine.gameId, gameId);
+    final resumed = tester.widget<PlayerHand>(find.byType(PlayerHand));
+    expect(resumed.cards, order);
+    expect(resumed.selectedCards, {engine.players.first.hand.first});
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Leave'));
+    await tester.pumpAndSettle();
+    expect(find.byType(GameScreen), findsNothing);
+    expect(find.byKey(const ValueKey('new-game-button')), findsOneWidget);
+    expect(engine.gameId, gameId);
+    expect(engine.state.isActive, isTrue);
+    final statistics = PreferencesService(
+      await SharedPreferences.getInstance(),
+    ).loadStatistics();
+    expect(statistics.gamesPlayed, 0);
+    expect(statistics.losses, 0);
+  });
+
+  testWidgets('completed game exits without confirmation', (tester) async {
+    await tester.pumpWidget(const TienLenApp());
+    await tester.pumpAndSettle();
+    final engine = humanLeadEngine(winningHand: true);
+    engine.playCards(engine.players.first.id, [engine.players.first.hand.single]);
+    tester.state<NavigatorState>(find.byType(Navigator)).push<void>(
+      MaterialPageRoute<void>(builder: (_) => GameScreen(engine: engine)),
+    );
+    await tester.pumpAndSettle();
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.byType(GameScreen), findsNothing);
+    expect(find.byKey(const ValueKey('new-game-button')), findsOneWidget);
   });
 
   test('sounds default on and both values survive store reload', () async {

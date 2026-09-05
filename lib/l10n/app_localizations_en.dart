@@ -9,6 +9,15 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get leaveGameTitle => 'Leave game?';
+
+  @override
+  String get leaveGameMessage => 'Your current game will be lost.';
+
+  @override
+  String get leave => 'Leave';
+
+  @override
   String get difficulty => 'Difficulty';
 
   @override
