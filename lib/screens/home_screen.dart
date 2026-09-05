@@ -2,12 +2,84 @@ import 'package:flutter/material.dart';
 import 'package:tien_len/l10n/app_localizations.dart';
 
 import '../widgets/home_hero_graphic.dart';
+import '../services/saved_game_service.dart';
 import 'game_screen.dart';
 import 'rules_screen.dart';
 import 'settings_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  SavedGameService? _service;
+  bool _hasSave = false;
+  bool _opening = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _refreshSave();
+  }
+
+  Future<void> _refreshSave() async {
+    final service = await SavedGameService.open();
+    if (!mounted) return;
+    setState(() {
+      _service = service;
+      _hasSave = service.hasSavedGame();
+    });
+  }
+
+  Future<void> _openGame({bool resume = false}) async {
+    if (_opening) return;
+    _opening = true;
+    try {
+      final service = _service ?? await SavedGameService.open();
+      final saved = service.load();
+      if (!mounted) return;
+      if (!resume && saved != null) {
+        final loc = AppLocalizations.of(context)!;
+        final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(loc.startNewGameTitle),
+            content: Text(loc.replaceSavedGameMessage),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text(loc.cancel),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: Text(loc.startNewGame),
+              ),
+            ],
+          ),
+        );
+        if (confirmed != true || !mounted) return;
+      }
+      if (resume && saved == null) {
+        await _refreshSave();
+        return;
+      }
+      if (!mounted) return;
+      await Navigator.of(context).push<void>(
+        MaterialPageRoute<void>(
+          builder: (_) => GameScreen(
+            engine: resume ? saved!.engine : null,
+            initialHumanCardOrder: resume ? saved!.humanCardOrder : null,
+          ),
+        ),
+      );
+      await _refreshSave();
+    } finally {
+      _opening = false;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,15 +104,27 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 32),
+                  if (_hasSave) ...[
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton.icon(
+                        key: const ValueKey('continue-game-button'),
+                        onPressed: () => _openGame(resume: true),
+                        icon: const Icon(Icons.play_arrow_rounded),
+                        label: Text(loc.continueGame),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
                   SizedBox(
                     width: double.infinity,
                     child: FilledButton.icon(
                       key: const ValueKey('new-game-button'),
-                      onPressed: () => Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (_) => const GameScreen(),
-                        ),
-                      ),
+                      onPressed: _openGame,
+                      style: _hasSave ? FilledButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+                        foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
+                      ) : null,
                       icon: const Icon(Icons.play_arrow_rounded),
                       label: Text(loc.newGame),
                     ),

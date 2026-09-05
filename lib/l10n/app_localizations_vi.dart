@@ -12,7 +12,20 @@ class AppLocalizationsVi extends AppLocalizations {
   String get leaveGameTitle => 'Rời ván chơi?';
 
   @override
-  String get leaveGameMessage => 'Bạn sẽ mất ván chơi hiện tại.';
+  String get leaveGameMessage => 'Bạn có thể tiếp tục ván chơi này sau.';
+
+  @override
+  String get continueGame => 'Tiếp tục ván chơi';
+
+  @override
+  String get startNewGameTitle => 'Bắt đầu ván mới?';
+
+  @override
+  String get replaceSavedGameMessage =>
+      'Ván chơi đã lưu của bạn sẽ được thay thế.';
+
+  @override
+  String get startNewGame => 'Bắt đầu ván mới';
 
   @override
   String get leave => 'Rời ván';

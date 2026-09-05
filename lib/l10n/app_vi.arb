@@ -1,6 +1,10 @@
 {
   "leaveGameTitle": "Rời ván chơi?",
-  "leaveGameMessage": "Bạn sẽ mất ván chơi hiện tại.",
+  "leaveGameMessage": "Bạn có thể tiếp tục ván chơi này sau.",
+  "continueGame": "Tiếp tục ván chơi",
+  "startNewGameTitle": "Bắt đầu ván mới?",
+  "replaceSavedGameMessage": "Ván chơi đã lưu của bạn sẽ được thay thế.",
+  "startNewGame": "Bắt đầu ván mới",
   "leave": "Rời ván",
   "@@locale": "vi",
   "difficulty": "Độ khó",

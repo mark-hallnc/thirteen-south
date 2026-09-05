@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:tien_len/l10n/app_localizations.dart';
 
 import '../game/game_engine.dart';
+import '../ai/ai_difficulty.dart';
 import '../game/move_validator.dart';
 import '../audio/game_sounds.dart';
 import '../models/player.dart';
 import '../models/playing_card.dart';
 import '../preferences_scope.dart';
+import '../services/saved_game_service.dart';
 import '../widgets/game_table_widgets.dart';
 import '../widgets/player_hand.dart';
 import 'settings_screen.dart';
@@ -17,21 +19,38 @@ class GameScreen extends StatefulWidget {
   const GameScreen({
     super.key,
     this.engine,
+    this.initialHumanCardOrder,
     this.aiDelay = const Duration(milliseconds: 550),
   });
 
   final GameEngine? engine;
+  final List<PlayingCard>? initialHumanCardOrder;
   final Duration aiDelay;
 
   @override
   State<GameScreen> createState() => _GameScreenState();
 }
 
-class _GameScreenState extends State<GameScreen> {
+class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
+  final Future<SavedGameService> _saveService = SavedGameService.open();
+  AiDifficulty? _lastPreferenceDifficulty;
+
+  Future<void> _saveGame() {
+    final snapshot = SavedGame.capture(_engine, _humanCardOrder);
+    return _saveService.then((service) => service.save(snapshot));
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+      unawaited(_saveGame());
+    }
+  }
   late final GameEngine _engine;
   final Set<PlayingCard> _selected = <PlayingCard>{};
   final GameSounds _sounds = GameSounds();
   bool _leaveDialogOpen = false;
+  bool _newGameDialogOpen = false;
 
   Future<void> _confirmLeave() async {
     if (_leaveDialogOpen) return;
@@ -56,6 +75,8 @@ class _GameScreenState extends State<GameScreen> {
         ),
       );
       if (!mounted || confirmed != true) return;
+      await _saveGame();
+      if (!mounted) return;
       // The dialog has closed. Pop this route directly, bypassing maybePop's
       // active-game veto; the successful callback returns without prompting.
       if (ModalRoute.of(context)?.isCurrent == true) {
@@ -75,12 +96,17 @@ class _GameScreenState extends State<GameScreen> {
   void initState() {
     super.initState();
     _engine = widget.engine ?? (GameEngine()..startNewGame());
-    _humanCardOrder = List.of(_engine.players.first.hand);
+    _humanCardOrder = (widget.initialHumanCardOrder ?? _engine.players.first.hand)
+        .toSet().toList();
+    _syncHumanCardOrder();
+    WidgetsBinding.instance.addObserver(this);
+    unawaited(_saveGame());
     WidgetsBinding.instance.addPostFrameCallback((_) => _runAiTurns());
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _aiRun++;
     _aiTimer?.cancel();
     unawaited(_sounds.dispose());
@@ -92,7 +118,17 @@ class _GameScreenState extends State<GameScreen> {
     super.didChangeDependencies();
     final preferences = PreferencesScope.maybeOf(context);
     _sounds.setEnabled(preferences?.soundsEnabled ?? true);
-    if (preferences != null) _engine.difficulty = preferences.difficulty;
+    if (preferences != null) {
+      final preserveRestoredDifficulty = _lastPreferenceDifficulty == null &&
+          widget.initialHumanCardOrder != null;
+      if (!preserveRestoredDifficulty &&
+          _lastPreferenceDifficulty != preferences.difficulty &&
+          _engine.difficulty != preferences.difficulty) {
+        _engine.difficulty = preferences.difficulty;
+        unawaited(_saveGame());
+      }
+      _lastPreferenceDifficulty = preferences.difficulty;
+    }
     if (_engine.state.winner != null && !_resultRecorded) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _recordResult());
     }
@@ -113,6 +149,7 @@ class _GameScreenState extends State<GameScreen> {
       final cardsBefore = aiPlayer.cardsRemaining;
       MoveValidationResult? result;
       setState(() => result = _engine.performAiTurn());
+      if (result!.isValid) unawaited(_saveGame());
       if (result!.isValid && aiPlayer.cardsRemaining < cardsBefore) {
         unawaited(_sounds.playCardPlaced());
       }
@@ -142,6 +179,7 @@ class _GameScreenState extends State<GameScreen> {
       final card = _humanCardOrder.removeAt(oldIndex);
       _humanCardOrder.insert(newIndex, card);
     });
+    unawaited(_saveGame());
   }
 
   void _play() {
@@ -155,6 +193,7 @@ class _GameScreenState extends State<GameScreen> {
         _selected.clear();
         _syncHumanCardOrder();
       });
+      unawaited(_saveGame());
       _recordResult();
       _runAiTurns();
     } else {
@@ -167,13 +206,38 @@ class _GameScreenState extends State<GameScreen> {
     final result = _engine.pass(_engine.players.first.id);
     if (result.isValid) {
       setState(_selected.clear);
+      unawaited(_saveGame());
       _runAiTurns();
     } else {
       _showError(result.reason);
     }
   }
 
-  void _newGame() {
+  Future<void> _newGame() async {
+    if (_newGameDialogOpen) return;
+    if (_engine.state.isActive) {
+      _newGameDialogOpen = true;
+      final loc = AppLocalizations.of(context)!;
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text(loc.startNewGameTitle),
+          content: Text(loc.replaceSavedGameMessage),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(loc.cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text(loc.startNewGame),
+            ),
+          ],
+        ),
+      );
+      _newGameDialogOpen = false;
+      if (!mounted || confirmed != true) return;
+    }
     _aiRun++;
     _aiTimer?.cancel();
     _aiTimer = null;
@@ -184,12 +248,14 @@ class _GameScreenState extends State<GameScreen> {
       _engine.startNewGame();
       _humanCardOrder = List.of(_engine.players.first.hand);
     });
+    unawaited(_saveGame());
     _runAiTurns();
   }
 
   void _recordResult() {
     final winner = _engine.state.winner;
     if (winner == null || _resultRecorded) return;
+    unawaited(_saveGame());
     if (!_resultSoundPlayed) {
       _resultSoundPlayed = true;
       unawaited(

@@ -107,8 +107,32 @@ abstract class AppLocalizations {
   /// No description provided for @leaveGameMessage.
   ///
   /// In en, this message translates to:
-  /// **'Your current game will be lost.'**
+  /// **'You can continue this game later.'**
   String get leaveGameMessage;
+
+  /// No description provided for @continueGame.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue Game'**
+  String get continueGame;
+
+  /// No description provided for @startNewGameTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Start new game?'**
+  String get startNewGameTitle;
+
+  /// No description provided for @replaceSavedGameMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your saved game will be replaced.'**
+  String get replaceSavedGameMessage;
+
+  /// No description provided for @startNewGame.
+  ///
+  /// In en, this message translates to:
+  /// **'Start New Game'**
+  String get startNewGame;
 
   /// No description provided for @leave.
   ///

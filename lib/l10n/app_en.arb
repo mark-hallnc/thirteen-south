@@ -1,6 +1,10 @@
 {
   "leaveGameTitle": "Leave game?",
-  "leaveGameMessage": "Your current game will be lost.",
+  "leaveGameMessage": "You can continue this game later.",
+  "continueGame": "Continue Game",
+  "startNewGameTitle": "Start new game?",
+  "replaceSavedGameMessage": "Your saved game will be replaced.",
+  "startNewGame": "Start New Game",
   "leave": "Leave",
   "@@locale": "en",
   "difficulty": "Difficulty",

@@ -77,6 +77,13 @@ extension PlayingCardAssetX on PlayingCard {
 class PlayingCard implements Comparable<PlayingCard> {
   const PlayingCard(this.rank, this.suit);
 
+  Map<String, dynamic> toJson() => {'rank': rank.name, 'suit': suit.name};
+
+  factory PlayingCard.fromJson(Map<String, dynamic> json) => PlayingCard(
+    CardRank.values.byName(json['rank'] as String),
+    CardSuit.values.byName(json['suit'] as String),
+  );
+
   final CardRank rank;
   final CardSuit suit;
 

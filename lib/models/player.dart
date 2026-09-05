@@ -14,6 +14,26 @@ class Player {
   }
 
   final String id;
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'displayName': displayName,
+    'isHuman': isHuman,
+    'hand': _hand.map((card) => card.toJson()).toList(),
+  };
+
+  factory Player.fromJson(Map<String, dynamic> json) {
+    final player = Player(
+      id: json['id'] as String,
+      displayName: json['displayName'] as String,
+      isHuman: json['isHuman'] as bool,
+    );
+    // Restore the recorded engine order without sorting or dealing.
+    player._hand.addAll((json['hand'] as List).map(
+      (card) => PlayingCard.fromJson(card as Map<String, dynamic>),
+    ));
+    return player;
+  }
   final String displayName;
   final bool isHuman;
 

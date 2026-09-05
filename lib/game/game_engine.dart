@@ -41,6 +41,66 @@ class GameEngine {
 
   GameState get state => _state;
 
+  Map<String, dynamic> toJson() => {
+    'gameId': gameId,
+    'players': players.map((player) => player.toJson()).toList(),
+    'difficulty': difficulty.name,
+    'startingPlayerIndex': startingPlayerIndex,
+    'currentPlayerIndex': state.currentPlayerIndex,
+    'tableCards': state.currentTableMove?.cards.map((card) => card.toJson()).toList(),
+    'currentMovePlayerIndex': state.currentMovePlayerIndex,
+    'passedPlayerIds': state.passedPlayerIds.toList(),
+    'openingRuleActive': state.openingRuleActive,
+    'isActive': state.isActive,
+    'winnerIndex': state.winner == null ? null : players.indexOf(state.winner!),
+  };
+
+  factory GameEngine.fromJson(Map<String, dynamic> json) {
+    final players = (json['players'] as List)
+        .map((player) => Player.fromJson(player as Map<String, dynamic>))
+        .toList();
+    final engine = GameEngine(
+      players: players,
+      difficulty: AiDifficulty.values.byName(json['difficulty'] as String),
+    );
+    int index(String key) {
+      final value = json[key] as int;
+      if (value < 0 || value >= 4) throw FormatException('Invalid $key');
+      return value;
+    }
+    final ids = players.map((player) => player.id).toSet();
+    final cards = players.expand((player) => player.hand).toList();
+    if (ids.length != 4 || !players.first.isHuman ||
+        players.skip(1).any((player) => player.isHuman) ||
+        cards.toSet().length != cards.length) {
+      throw const FormatException('Invalid saved players');
+    }
+    final tableJson = json['tableCards'] as List?;
+    final table = tableJson == null ? null : engine.analyzer.analyze(
+      tableJson.map((card) => PlayingCard.fromJson(card as Map<String, dynamic>)).toList(),
+    );
+    final owner = json['currentMovePlayerIndex'] == null ? null : index('currentMovePlayerIndex');
+    final passed = (json['passedPlayerIds'] as List).cast<String>().toSet();
+    if ((table != null && (!table.isValid || table.cards.any(cards.contains))) ||
+        (table == null) != (owner == null) || !ids.containsAll(passed)) {
+      throw const FormatException('Invalid saved trick');
+    }
+    engine.gameId = json['gameId'] as String;
+    if (engine.gameId.isEmpty) throw const FormatException('Missing game ID');
+    engine.startingPlayerIndex = index('startingPlayerIndex');
+    engine._state = GameState(
+      players: players,
+      currentPlayerIndex: index('currentPlayerIndex'),
+      currentTableMove: table,
+      currentMovePlayerIndex: owner,
+      passedPlayerIds: passed,
+      openingRuleActive: json['openingRuleActive'] as bool,
+      isActive: json['isActive'] as bool,
+      winner: json['winnerIndex'] == null ? null : players[index('winnerIndex')],
+    );
+    return engine;
+  }
+
   void startNewGame() {
     _beginSession();
     deck.reset();

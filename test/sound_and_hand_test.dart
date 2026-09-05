@@ -217,6 +217,8 @@ void main() {
     expect(hand().cards, [original[3], original[1], original[2]]);
     expect(engine.players.first.hand, original.skip(1).toList());
     await tester.tap(find.byIcon(Icons.refresh_rounded));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Start New Game'));
     await tester.pump();
     expect(hand().cards, engine.players.first.hand);
     expect(hand().cards, hasLength(13));
