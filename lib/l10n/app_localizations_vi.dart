@@ -9,6 +9,57 @@ class AppLocalizationsVi extends AppLocalizations {
   AppLocalizationsVi([String locale = 'vi']) : super(locale);
 
   @override
+  String get coins => 'Xu';
+
+  @override
+  String get balance => 'Số dư';
+
+  @override
+  String get gameStake => 'Mức xu tham gia';
+
+  @override
+  String get free => 'Miễn phí';
+
+  @override
+  String get freePlay => 'Chơi miễn phí';
+
+  @override
+  String get stake => 'Mức xu';
+
+  @override
+  String get coinBalance => 'Số xu hiện có';
+
+  @override
+  String get highestBalance => 'Số xu cao nhất';
+
+  @override
+  String get coinsWon => 'Xu đã thắng';
+
+  @override
+  String get coinsLost => 'Xu đã thua';
+
+  @override
+  String get noCoinChange => 'Số xu không đổi';
+
+  @override
+  String get startGame => 'Bắt đầu chơi';
+
+  @override
+  String coinAmount(Object amount) {
+    return '$amount Xu';
+  }
+
+  @override
+  String coinBalanceAmount(int amount) {
+    return 'Số dư: $amount Xu';
+  }
+
+  @override
+  String stakeAmount(int amount) {
+    return 'Mức xu: $amount';
+  }
+
+  @override
   String get leaveGameTitle => 'Rời ván chơi?';
 
   @override

@@ -132,6 +132,10 @@ class SettingsScreen extends StatelessWidget {
                       label: loc.gamesPlayed,
                       value: '${preferences.statistics.gamesPlayed}',
                     ),
+                    _StatisticRow(label: loc.coinBalance, value: '${preferences.coinBalance}'),
+                    _StatisticRow(label: loc.highestBalance, value: '${preferences.highestCoinBalance}'),
+                    _StatisticRow(label: loc.coinsWon, value: '${preferences.coinsWon}'),
+                    _StatisticRow(label: loc.coinsLost, value: '${preferences.coinsLost}'),
                     _StatisticRow(
                       label: loc.wins,
                       value: '${preferences.statistics.wins}',

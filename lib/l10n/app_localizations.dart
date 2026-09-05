@@ -98,6 +98,96 @@ abstract class AppLocalizations {
     Locale('vi'),
   ];
 
+  /// No description provided for @coins.
+  ///
+  /// In en, this message translates to:
+  /// **'Coins'**
+  String get coins;
+
+  /// No description provided for @balance.
+  ///
+  /// In en, this message translates to:
+  /// **'Balance'**
+  String get balance;
+
+  /// No description provided for @gameStake.
+  ///
+  /// In en, this message translates to:
+  /// **'Game Stake'**
+  String get gameStake;
+
+  /// No description provided for @free.
+  ///
+  /// In en, this message translates to:
+  /// **'Free'**
+  String get free;
+
+  /// No description provided for @freePlay.
+  ///
+  /// In en, this message translates to:
+  /// **'Free Play'**
+  String get freePlay;
+
+  /// No description provided for @stake.
+  ///
+  /// In en, this message translates to:
+  /// **'Stake'**
+  String get stake;
+
+  /// No description provided for @coinBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Coin balance'**
+  String get coinBalance;
+
+  /// No description provided for @highestBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Highest balance'**
+  String get highestBalance;
+
+  /// No description provided for @coinsWon.
+  ///
+  /// In en, this message translates to:
+  /// **'Coins won'**
+  String get coinsWon;
+
+  /// No description provided for @coinsLost.
+  ///
+  /// In en, this message translates to:
+  /// **'Coins lost'**
+  String get coinsLost;
+
+  /// No description provided for @noCoinChange.
+  ///
+  /// In en, this message translates to:
+  /// **'No coin change'**
+  String get noCoinChange;
+
+  /// No description provided for @startGame.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Game'**
+  String get startGame;
+
+  /// No description provided for @coinAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} Coins'**
+  String coinAmount(Object amount);
+
+  /// No description provided for @coinBalanceAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Balance: {amount} Coins'**
+  String coinBalanceAmount(int amount);
+
+  /// No description provided for @stakeAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Stake: {amount}'**
+  String stakeAmount(int amount);
+
   /// No description provided for @leaveGameTitle.
   ///
   /// In en, this message translates to:

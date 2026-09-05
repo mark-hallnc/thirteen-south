@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tien_len/l10n/app_localizations.dart';
 
 import '../game/game_engine.dart';
@@ -11,6 +12,9 @@ import '../models/player.dart';
 import '../models/playing_card.dart';
 import '../preferences_scope.dart';
 import '../services/saved_game_service.dart';
+import '../services/preferences_service.dart';
+import '../models/coin_statistics.dart';
+import '../widgets/stake_selector.dart';
 import '../widgets/game_table_widgets.dart';
 import '../widgets/player_hand.dart';
 import 'settings_screen.dart';
@@ -20,10 +24,14 @@ class GameScreen extends StatefulWidget {
     super.key,
     this.engine,
     this.initialHumanCardOrder,
+    this.stake = 0,
+    this.stakeCommitted = true,
     this.aiDelay = const Duration(milliseconds: 550),
   });
 
   final GameEngine? engine;
+  final int stake;
+  final bool stakeCommitted;
   final List<PlayingCard>? initialHumanCardOrder;
   final Duration aiDelay;
 
@@ -34,10 +42,25 @@ class GameScreen extends StatefulWidget {
 class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   final Future<SavedGameService> _saveService = SavedGameService.open();
   AiDifficulty? _lastPreferenceDifficulty;
+  late int _stake;
+  late bool _stakeCommitted;
+  CoinStatistics? _resultCoins;
 
-  Future<void> _saveGame() {
-    final snapshot = SavedGame.capture(_engine, _humanCardOrder);
-    return _saveService.then((service) => service.save(snapshot));
+  Future<void> _saveGame() async {
+    final snapshot = SavedGame.capture(_engine, _humanCardOrder,
+      stake: _stake, stakeCommitted: _stakeCommitted);
+    final winner = snapshot.engine.state.winner;
+    if (winner != null) {
+      final preferences = mounted ? PreferencesScope.maybeOf(context) : null;
+      final coins = preferences != null
+          ? await preferences.settleGame(snapshot.engine.gameId, snapshot.stake, winner.isHuman)
+          : await (PreferencesService(await SharedPreferences.getInstance()))
+              .settleGame(gameId: snapshot.engine.gameId, stake: snapshot.stake, humanWon: winner.isHuman);
+      if (mounted && _engine.gameId == snapshot.engine.gameId) {
+        setState(() => _resultCoins = coins);
+      }
+    }
+    await (await _saveService).save(snapshot);
   }
 
   @override
@@ -46,7 +69,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       unawaited(_saveGame());
     }
   }
-  late final GameEngine _engine;
+  late GameEngine _engine;
   final Set<PlayingCard> _selected = <PlayingCard>{};
   final GameSounds _sounds = GameSounds();
   bool _leaveDialogOpen = false;
@@ -96,12 +119,17 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     _engine = widget.engine ?? (GameEngine()..startNewGame());
+    _stake = widget.stake;
+    _stakeCommitted = widget.stakeCommitted;
     _humanCardOrder = (widget.initialHumanCardOrder ?? _engine.players.first.hand)
         .toSet().toList();
     _syncHumanCardOrder();
     WidgetsBinding.instance.addObserver(this);
-    unawaited(_saveGame());
-    WidgetsBinding.instance.addPostFrameCallback((_) => _runAiTurns());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      unawaited(_saveGame());
+      _runAiTurns();
+    });
   }
 
   @override
@@ -235,9 +263,15 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
           ],
         ),
       );
-      _newGameDialogOpen = false;
-      if (!mounted || confirmed != true) return;
+      if (!mounted || confirmed != true) {
+        _newGameDialogOpen = false;
+        return;
+      }
     }
+    _newGameDialogOpen = true;
+    final game = await selectNewGame(context);
+    _newGameDialogOpen = false;
+    if (!mounted || game == null) return;
     _aiRun++;
     _aiTimer?.cancel();
     _aiTimer = null;
@@ -245,7 +279,10 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       _selected.clear();
       _resultRecorded = false;
       _resultSoundPlayed = false;
-      _engine.startNewGame();
+      _engine = game.engine;
+      _stake = game.stake;
+      _stakeCommitted = game.stakeCommitted;
+      _resultCoins = null;
       _humanCardOrder = List.of(_engine.players.first.hand);
     });
     unawaited(_saveGame());
@@ -289,6 +326,15 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     return loc.computer(_engine.players.indexOf(player));
   }
 
+  String? _coinResultText(AppLocalizations loc, bool humanWon) {
+    final coins = _resultCoins;
+    if (coins == null) return null;
+    final net = CoinEconomy.netChange(_stake, humanWon);
+    final outcome = net == 0 ? loc.noCoinChange :
+        loc.coinAmount('${net > 0 ? '+' : ''}$net');
+    return '$outcome\n${loc.coinBalanceAmount(coins.balance)}';
+  }
+
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
@@ -305,6 +351,14 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       child: Scaffold(
       appBar: AppBar(
         title: Text(loc.appTitle),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(22),
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: Text(_stake == 0 ? loc.freePlay : loc.stakeAmount(_stake),
+              key: const ValueKey('game-stake')),
+          ),
+        ),
         actions: [
           IconButton(
             tooltip: loc.settings,
@@ -418,6 +472,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                       ? loc.youWin
                       : loc.playerWins(_name(state.winner!, loc)),
                   buttonLabel: loc.newGame,
+                  coinResult: _coinResultText(loc, state.winner!.isHuman),
                   onNewGame: _newGame,
                 ),
               ),
@@ -525,12 +580,14 @@ class _GameOverOverlay extends StatelessWidget {
     required this.title,
     required this.message,
     required this.buttonLabel,
+    this.coinResult,
     required this.onNewGame,
   });
 
   final String title;
   final String message;
   final String buttonLabel;
+  final String? coinResult;
   final VoidCallback onNewGame;
 
   @override
@@ -567,6 +624,11 @@ class _GameOverOverlay extends StatelessWidget {
                       message,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
+                    if (coinResult != null) ...[
+                      const SizedBox(height: 12),
+                      Text(coinResult!, key: const ValueKey('coin-result'),
+                        textAlign: TextAlign.center),
+                    ],
                     const SizedBox(height: 22),
                     SizedBox(
                       width: double.infinity,

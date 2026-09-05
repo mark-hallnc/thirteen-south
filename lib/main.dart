@@ -6,6 +6,7 @@ import 'package:tien_len/l10n/app_localizations.dart';
 
 import 'ai/ai_difficulty.dart';
 import 'models/game_statistics.dart';
+import 'models/coin_statistics.dart';
 import 'preferences_scope.dart';
 import 'screens/home_screen.dart';
 import 'services/preferences_service.dart';
@@ -32,6 +33,23 @@ class _TienLenAppState extends State<TienLenApp> {
   AiDifficulty _difficulty = AiDifficulty.normal;
   GameStatistics _statistics = const GameStatistics();
   PreferencesService? _preferencesService;
+  CoinStatistics _coins = const CoinStatistics();
+
+  Future<bool> _commitStake(String gameId, int stake) async {
+    final service = _preferencesService ??
+        PreferencesService(await SharedPreferences.getInstance());
+    final committed = await service.commitStake(gameId, stake);
+    if (mounted) setState(() => _coins = service.loadCoins());
+    return committed;
+  }
+
+  Future<CoinStatistics> _settleGame(String gameId, int stake, bool humanWon) async {
+    final service = _preferencesService ??
+        PreferencesService(await SharedPreferences.getInstance());
+    final coins = await service.settleGame(gameId: gameId, stake: stake, humanWon: humanWon);
+    if (mounted) setState(() => _coins = coins);
+    return coins;
+  }
 
   @override
   void initState() {
@@ -49,6 +67,7 @@ class _TienLenAppState extends State<TienLenApp> {
       _difficulty = service.loadDifficulty();
       _soundsEnabled = service.loadSoundsEnabled();
       _statistics = service.loadStatistics();
+      _coins = service.loadCoins();
       if (value != null && value != 'system') _locale = Locale(value);
     });
   }
@@ -101,6 +120,9 @@ class _TienLenAppState extends State<TienLenApp> {
   Widget build(BuildContext context) {
     return PreferencesScope(
       difficulty: _difficulty,
+      coins: _coins,
+      commitStake: _commitStake,
+      settleGame: _settleGame,
       soundsEnabled: _soundsEnabled,
       setSoundsEnabled: _setSoundsEnabled,
       statistics: _statistics,

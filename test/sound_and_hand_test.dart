@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tien_len/ai/ai_difficulty.dart';
 import 'package:tien_len/main.dart';
 import 'package:tien_len/models/game_statistics.dart';
+import 'package:tien_len/models/coin_statistics.dart';
 import 'package:tien_len/models/playing_card.dart';
 import 'package:tien_len/preferences_scope.dart';
 import 'package:tien_len/services/preferences_service.dart';
@@ -153,6 +154,9 @@ void main() {
       builder: (context, setState) {
         update = setState;
         return PreferencesScope(
+          coins: const CoinStatistics(),
+          commitStake: (_, _) async => true,
+          settleGame: (_, _, _) async => const CoinStatistics(),
           difficulty: AiDifficulty.normal,
           statistics: const GameStatistics(),
           soundsEnabled: enabled,
@@ -219,8 +223,10 @@ void main() {
     await tester.tap(find.byIcon(Icons.refresh_rounded));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Start New Game'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('start-staked-game')));
     await tester.pump();
-    expect(hand().cards, engine.players.first.hand);
+    expect(hand().cards, orderedEquals([...hand().cards]..sort()));
     expect(hand().cards, hasLength(13));
     await tester.pumpWidget(const SizedBox());
   });

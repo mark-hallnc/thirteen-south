@@ -4,22 +4,31 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../game/game_engine.dart';
 import '../models/playing_card.dart';
+import '../models/coin_statistics.dart';
 
 class SavedGame {
-  SavedGame({required this.engine, required List<PlayingCard> humanCardOrder})
+  SavedGame({required this.engine, required List<PlayingCard> humanCardOrder,
+    this.stake = 0, this.stakeCommitted = true})
     : humanCardOrder = List.unmodifiable(humanCardOrder);
 
   final GameEngine engine;
+  final int stake;
+  final bool stakeCommitted;
   final List<PlayingCard> humanCardOrder;
 
-  factory SavedGame.capture(GameEngine engine, List<PlayingCard> order) =>
+  factory SavedGame.capture(GameEngine engine, List<PlayingCard> order,
+      {int stake = 0, bool stakeCommitted = true}) =>
       SavedGame(
         engine: GameEngine.fromJson(engine.toJson()),
         humanCardOrder: order,
+        stake: stake,
+        stakeCommitted: stakeCommitted,
       );
 
   Map<String, dynamic> toJson() => {
     'version': 1,
+    'stake': stake,
+    'stakeCommitted': stakeCommitted,
     'engine': engine.toJson(),
     'humanCardOrder': humanCardOrder.map((card) => card.toJson()).toList(),
   };
@@ -35,7 +44,13 @@ class SavedGame {
         !order.every(hand.contains)) {
       throw const FormatException('Invalid saved display order');
     }
-    return SavedGame(engine: engine, humanCardOrder: order);
+    final stake = json['stake'] as int? ?? 0;
+    final committed = json['stakeCommitted'] as bool? ?? (stake == 0);
+    if (!CoinEconomy.stakes.contains(stake) || !committed) {
+      throw const FormatException('Invalid saved stake');
+    }
+    return SavedGame(engine: engine, humanCardOrder: order,
+      stake: stake, stakeCommitted: committed);
   }
 }
 
@@ -56,7 +71,7 @@ class SavedGameService {
 
   Future<void> save(SavedGame game) {
     if (!game.engine.state.isActive || game.engine.state.winner != null) {
-      return clear();
+      return clear(gameId: game.engine.gameId);
     }
     // Snapshot synchronously before the engine can advance again.
     final encoded = jsonEncode(game.toJson());
@@ -80,7 +95,8 @@ class SavedGameService {
 
   bool hasSavedGame() => load() != null;
 
-  Future<void> clear() => _enqueue(() async {
+  Future<void> clear({String? gameId}) => _enqueue(() async {
+    if (gameId != null && load()?.engine.gameId != gameId) return;
     await _preferences.remove(saveKey);
   });
 

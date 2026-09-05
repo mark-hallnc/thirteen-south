@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:tien_len/l10n/app_localizations.dart';
 
 import '../widgets/home_hero_graphic.dart';
+import '../widgets/stake_selector.dart';
+import '../preferences_scope.dart';
 import '../services/saved_game_service.dart';
 import 'game_screen.dart';
 import 'rules_screen.dart';
@@ -67,11 +69,15 @@ class _HomeScreenState extends State<HomeScreen> {
         return;
       }
       if (!mounted) return;
+      final game = resume ? saved! : await selectNewGame(context);
+      if (game == null || !mounted) return;
       await Navigator.of(context).push<void>(
         MaterialPageRoute<void>(
           builder: (_) => GameScreen(
-            engine: resume ? saved!.engine : null,
-            initialHumanCardOrder: resume ? saved!.humanCardOrder : null,
+            engine: game.engine,
+            initialHumanCardOrder: game.humanCardOrder,
+            stake: game.stake,
+            stakeCommitted: game.stakeCommitted,
           ),
         ),
       );
@@ -104,6 +110,16 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   const SizedBox(height: 32),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.paid_outlined, size: 20),
+                      const SizedBox(width: 6),
+                      Text(loc.coinAmount(PreferencesScope.of(context).coinBalance),
+                        key: const ValueKey('home-coin-balance')),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
                   if (_hasSave) ...[
                     SizedBox(
                       width: double.infinity,

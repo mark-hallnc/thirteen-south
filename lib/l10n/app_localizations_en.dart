@@ -9,6 +9,57 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get coins => 'Coins';
+
+  @override
+  String get balance => 'Balance';
+
+  @override
+  String get gameStake => 'Game Stake';
+
+  @override
+  String get free => 'Free';
+
+  @override
+  String get freePlay => 'Free Play';
+
+  @override
+  String get stake => 'Stake';
+
+  @override
+  String get coinBalance => 'Coin balance';
+
+  @override
+  String get highestBalance => 'Highest balance';
+
+  @override
+  String get coinsWon => 'Coins won';
+
+  @override
+  String get coinsLost => 'Coins lost';
+
+  @override
+  String get noCoinChange => 'No coin change';
+
+  @override
+  String get startGame => 'Start Game';
+
+  @override
+  String coinAmount(Object amount) {
+    return '$amount Coins';
+  }
+
+  @override
+  String coinBalanceAmount(int amount) {
+    return 'Balance: $amount Coins';
+  }
+
+  @override
+  String stakeAmount(int amount) {
+    return 'Stake: $amount';
+  }
+
+  @override
   String get leaveGameTitle => 'Leave game?';
 
   @override
