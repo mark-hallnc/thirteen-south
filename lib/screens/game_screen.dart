@@ -11,6 +11,7 @@ import '../models/playing_card.dart';
 import '../preferences_scope.dart';
 import '../widgets/game_table_widgets.dart';
 import '../widgets/player_hand.dart';
+import 'settings_screen.dart';
 
 class GameScreen extends StatefulWidget {
   const GameScreen({
@@ -199,6 +200,15 @@ class _GameScreenState extends State<GameScreen> {
       appBar: AppBar(
         title: Text(loc.appTitle),
         actions: [
+          IconButton(
+            tooltip: loc.settings,
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => const SettingsScreen(),
+              ),
+            ),
+            icon: const Icon(Icons.tune_rounded),
+          ),
           IconButton(
             tooltip: loc.newGame,
             onPressed: _newGame,

@@ -7,12 +7,63 @@ import 'package:tien_len/models/game_statistics.dart';
 import 'package:tien_len/models/playing_card.dart';
 import 'package:tien_len/preferences_scope.dart';
 import 'package:tien_len/services/preferences_service.dart';
+import 'package:tien_len/screens/game_screen.dart';
+import 'package:tien_len/screens/settings_screen.dart';
 import 'package:tien_len/widgets/player_hand.dart';
 
 import 'ui_test.dart' show humanLeadEngine, localizedGame;
 
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
+
+  testWidgets('in-game settings returns to the same game and preferences', (
+    tester,
+  ) async {
+    await tester.pumpWidget(const TienLenApp());
+    await tester.pumpAndSettle();
+    final engine = humanLeadEngine();
+    final gameState = engine.state;
+    final gameId = engine.gameId;
+    final engineHand = List<PlayingCard>.of(engine.players.first.hand);
+    final navigator = tester.state<NavigatorState>(find.byType(Navigator));
+    navigator.push<void>(
+      MaterialPageRoute<void>(builder: (_) => GameScreen(engine: engine)),
+    );
+    await tester.pumpAndSettle();
+    final screenState = tester.state(find.byType(GameScreen));
+    PlayerHand hand() => tester.widget<PlayerHand>(find.byType(PlayerHand));
+    hand().onReorder!(0, 1);
+    hand().onCardTap(engineHand.first);
+    await tester.pumpAndSettle();
+    final displayOrder = List<PlayingCard>.of(hand().cards);
+
+    for (final enabled in [false, true]) {
+      await tester.tap(find.byIcon(Icons.tune_rounded));
+      await tester.pumpAndSettle();
+      expect(find.byType(SettingsScreen), findsOneWidget);
+      final toggle = find.byKey(const ValueKey('sounds-enabled'));
+      await tester.scrollUntilVisible(toggle, 200);
+      await tester.tap(toggle);
+      await tester.pumpAndSettle();
+      expect(tester.widget<SwitchListTile>(toggle).value, enabled);
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+
+      expect(find.byType(GameScreen), findsOneWidget);
+      expect(tester.state(find.byType(GameScreen)), same(screenState));
+      expect(engine.state, same(gameState));
+      expect(engine.gameId, gameId);
+      expect(engine.players.first.hand, engineHand);
+      expect(hand().cards, displayOrder);
+      expect(hand().selectedCards, {engineHand.first});
+      expect(
+        PreferencesScope.of(tester.element(find.byType(GameScreen)))
+            .soundsEnabled,
+        enabled,
+      );
+    }
+    await tester.pumpWidget(const SizedBox());
+  });
 
   test('sounds default on and both values survive store reload', () async {
     final preferences = await SharedPreferences.getInstance();
