@@ -98,6 +98,12 @@ abstract class AppLocalizations {
     Locale('vi'),
   ];
 
+  /// No description provided for @chooseYourStake.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your stake'**
+  String get chooseYourStake;
+
   /// No description provided for @coins.
   ///
   /// In en, this message translates to:

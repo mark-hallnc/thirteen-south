@@ -114,7 +114,7 @@ class OpponentPanel extends StatelessWidget {
     Widget label() => AnimatedContainer(
       duration: const Duration(milliseconds: 180),
       width: isTop ? 116 : 72,
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
       decoration: BoxDecoration(
         color: const Color(0xFF173E34).withValues(alpha: .94),
         borderRadius: BorderRadius.circular(11),
@@ -133,7 +133,7 @@ class OpponentPanel extends StatelessWidget {
               maxLines: 1,
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: 11.5,
+                fontSize: 11,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -144,7 +144,7 @@ class OpponentPanel extends StatelessWidget {
               '$cardCount $cardsLabel',
               key: ValueKey('opponent-$opponentId-card-count'),
               maxLines: 1,
-              style: const TextStyle(color: Color(0xFFC5D7CE), fontSize: 11),
+              style: const TextStyle(color: Color(0xFFC5D7CE), fontSize: 10.5),
             ),
           ),
           if (isPassed)
@@ -155,7 +155,7 @@ class OpponentPanel extends StatelessWidget {
                 maxLines: 1,
                 style: const TextStyle(
                   color: Color(0xFFFFC6C1),
-                  fontSize: 11,
+                  fontSize: 10.5,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -185,19 +185,19 @@ class OpponentPanel extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               SizedBox(
-  width: 76,
-  height: 156,
-  child: OpponentHand(
-    opponentId: opponentId,
-    cardCount: cardCount,
-    position: position,
-  ),
-),
-const SizedBox(height: 2),
-SizedBox(
-  height: 64,
-  child: label(),
-),
+                width: 76,
+                height: 156,
+                child: OpponentHand(
+                  opponentId: opponentId,
+                  cardCount: cardCount,
+                  position: position,
+                ),
+              ),
+              const SizedBox(height: 2),
+              SizedBox(
+                height: 64,
+                child: label(),
+              ),
             ],
           );
     return Semantics(

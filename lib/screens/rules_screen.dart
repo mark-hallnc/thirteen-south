@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tien_len/l10n/app_localizations.dart';
+import '../widgets/wallet_pill.dart';
 
 class RulesScreen extends StatelessWidget {
   const RulesScreen({super.key});
@@ -29,7 +30,7 @@ class RulesScreen extends StatelessWidget {
     ];
 
     return Scaffold(
-      appBar: AppBar(title: Text(loc.rules)),
+      appBar: AppBar(title: Text(loc.rules), bottom: const WalletStatusRow()),
       body: SafeArea(
         child: ListView.separated(
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),

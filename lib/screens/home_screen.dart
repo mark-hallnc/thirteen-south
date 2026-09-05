@@ -3,7 +3,7 @@ import 'package:tien_len/l10n/app_localizations.dart';
 
 import '../widgets/home_hero_graphic.dart';
 import '../widgets/stake_selector.dart';
-import '../preferences_scope.dart';
+import '../widgets/wallet_pill.dart';
 import '../services/saved_game_service.dart';
 import 'game_screen.dart';
 import 'rules_screen.dart';
@@ -91,6 +91,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     return Scaffold(
+      appBar: AppBar(toolbarHeight: 0, bottom: const WalletStatusRow()),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -110,16 +111,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   const SizedBox(height: 32),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.paid_outlined, size: 20),
-                      const SizedBox(width: 6),
-                      Text(loc.coinAmount(PreferencesScope.of(context).coinBalance),
-                        key: const ValueKey('home-coin-balance')),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
                   if (_hasSave) ...[
                     SizedBox(
                       width: double.infinity,

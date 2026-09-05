@@ -15,6 +15,8 @@ import '../services/saved_game_service.dart';
 import '../services/preferences_service.dart';
 import '../models/coin_statistics.dart';
 import '../widgets/stake_selector.dart';
+import '../widgets/wallet_pill.dart';
+import '../widgets/stake_pill.dart';
 import '../widgets/game_table_widgets.dart';
 import '../widgets/player_hand.dart';
 import 'settings_screen.dart';
@@ -351,13 +353,8 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       child: Scaffold(
       appBar: AppBar(
         title: Text(loc.appTitle),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(22),
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 4),
-            child: Text(_stake == 0 ? loc.freePlay : loc.stakeAmount(_stake),
-              key: const ValueKey('game-stake')),
-          ),
+        bottom: WalletStatusRow(
+          trailing: StakePill(key: const ValueKey('game-stake'), stake: _stake),
         ),
         actions: [
           IconButton(

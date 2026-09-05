@@ -10,6 +10,7 @@ import 'package:tien_len/services/preferences_service.dart';
 import 'package:tien_len/services/saved_game_service.dart';
 import 'package:tien_len/widgets/player_hand.dart';
 import 'package:tien_len/widgets/stake_selector.dart';
+import 'package:tien_len/widgets/wallet_pill.dart';
 
 import 'ui_test.dart' show humanLeadEngine;
 
@@ -95,7 +96,7 @@ void main() {
       PreferencesService.coinStateKey, jsonEncode(const CoinStatistics(balance: 0).toJson()));
     await tester.pumpWidget(const TienLenApp());
     await tester.pumpAndSettle();
-    expect(find.text('0 Coins'), findsOneWidget);
+    expect(tester.widget<WalletPill>(find.byType(WalletPill)).balance, 0);
     await tester.tap(find.byKey(const ValueKey('new-game-button')));
     await tester.pumpAndSettle();
     for (final stake in CoinEconomy.stakes) {
@@ -114,7 +115,7 @@ void main() {
   testWidgets('selecting then cancelling a stake does not deduct', (tester) async {
     await tester.pumpWidget(const TienLenApp());
     await tester.pumpAndSettle();
-    expect(find.text('500 Coins'), findsOneWidget);
+    expect(tester.widget<WalletPill>(find.byType(WalletPill)).balance, 500);
     await tester.tap(find.byKey(const ValueKey('new-game-button')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('stake-25')));

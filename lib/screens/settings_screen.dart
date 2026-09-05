@@ -4,6 +4,7 @@ import 'package:tien_len/l10n/app_localizations.dart';
 import '../ai/ai_difficulty.dart';
 import '../locale_controller_scope.dart';
 import '../preferences_scope.dart';
+import '../widgets/wallet_pill.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -16,7 +17,7 @@ class SettingsScreen extends StatelessWidget {
     final selected = controller.locale?.languageCode ?? 'system';
 
     return Scaffold(
-      appBar: AppBar(title: Text(loc.settings)),
+      appBar: AppBar(title: Text(loc.settings), bottom: const WalletStatusRow()),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
