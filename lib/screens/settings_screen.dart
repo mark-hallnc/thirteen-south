@@ -17,7 +17,10 @@ class SettingsScreen extends StatelessWidget {
     final selected = controller.locale?.languageCode ?? 'system';
 
     return Scaffold(
-      appBar: AppBar(title: Text(loc.settings), bottom: const WalletStatusRow()),
+      appBar: AppBar(
+        title: Text(loc.settings),
+        bottom: const WalletStatusRow(),
+      ),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
@@ -102,9 +105,9 @@ class SettingsScreen extends StatelessWidget {
             const SizedBox(height: 24),
             Text(
               loc.sound,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 12),
             Card(
@@ -133,10 +136,22 @@ class SettingsScreen extends StatelessWidget {
                       label: loc.gamesPlayed,
                       value: '${preferences.statistics.gamesPlayed}',
                     ),
-                    _StatisticRow(label: loc.coinBalance, value: '${preferences.coinBalance}'),
-                    _StatisticRow(label: loc.highestBalance, value: '${preferences.highestCoinBalance}'),
-                    _StatisticRow(label: loc.coinsWon, value: '${preferences.coinsWon}'),
-                    _StatisticRow(label: loc.coinsLost, value: '${preferences.coinsLost}'),
+                    _StatisticRow(
+                      label: loc.coinBalance,
+                      value: '${preferences.coinBalance}',
+                    ),
+                    _StatisticRow(
+                      label: loc.highestBalance,
+                      value: '${preferences.highestCoinBalance}',
+                    ),
+                    _StatisticRow(
+                      label: loc.coinsWon,
+                      value: '${preferences.coinsWon}',
+                    ),
+                    _StatisticRow(
+                      label: loc.coinsLost,
+                      value: '${preferences.coinsLost}',
+                    ),
                     _StatisticRow(
                       label: loc.wins,
                       value: '${preferences.statistics.wins}',

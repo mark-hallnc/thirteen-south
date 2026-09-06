@@ -47,7 +47,9 @@ class GameEngine {
     'difficulty': difficulty.name,
     'startingPlayerIndex': startingPlayerIndex,
     'currentPlayerIndex': state.currentPlayerIndex,
-    'tableCards': state.currentTableMove?.cards.map((card) => card.toJson()).toList(),
+    'tableCards': state.currentTableMove?.cards
+        .map((card) => card.toJson())
+        .toList(),
     'currentMovePlayerIndex': state.currentMovePlayerIndex,
     'passedPlayerIds': state.passedPlayerIds.toList(),
     'openingRuleActive': state.openingRuleActive,
@@ -68,21 +70,33 @@ class GameEngine {
       if (value < 0 || value >= 4) throw FormatException('Invalid $key');
       return value;
     }
+
     final ids = players.map((player) => player.id).toSet();
     final cards = players.expand((player) => player.hand).toList();
-    if (ids.length != 4 || !players.first.isHuman ||
+    if (ids.length != 4 ||
+        !players.first.isHuman ||
         players.skip(1).any((player) => player.isHuman) ||
         cards.toSet().length != cards.length) {
       throw const FormatException('Invalid saved players');
     }
     final tableJson = json['tableCards'] as List?;
-    final table = tableJson == null ? null : engine.analyzer.analyze(
-      tableJson.map((card) => PlayingCard.fromJson(card as Map<String, dynamic>)).toList(),
-    );
-    final owner = json['currentMovePlayerIndex'] == null ? null : index('currentMovePlayerIndex');
+    final table = tableJson == null
+        ? null
+        : engine.analyzer.analyze(
+            tableJson
+                .map(
+                  (card) => PlayingCard.fromJson(card as Map<String, dynamic>),
+                )
+                .toList(),
+          );
+    final owner = json['currentMovePlayerIndex'] == null
+        ? null
+        : index('currentMovePlayerIndex');
     final passed = (json['passedPlayerIds'] as List).cast<String>().toSet();
-    if ((table != null && (!table.isValid || table.cards.any(cards.contains))) ||
-        (table == null) != (owner == null) || !ids.containsAll(passed)) {
+    if ((table != null &&
+            (!table.isValid || table.cards.any(cards.contains))) ||
+        (table == null) != (owner == null) ||
+        !ids.containsAll(passed)) {
       throw const FormatException('Invalid saved trick');
     }
     engine.gameId = json['gameId'] as String;
@@ -96,7 +110,9 @@ class GameEngine {
       passedPlayerIds: passed,
       openingRuleActive: json['openingRuleActive'] as bool,
       isActive: json['isActive'] as bool,
-      winner: json['winnerIndex'] == null ? null : players[index('winnerIndex')],
+      winner: json['winnerIndex'] == null
+          ? null
+          : players[index('winnerIndex')],
     );
     return engine;
   }

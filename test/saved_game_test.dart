@@ -23,35 +23,45 @@ void main() {
     service = await SavedGameService.open();
   });
 
-  test('round trip preserves exact engine and UI state, including trick passes', () async {
-    final engine = humanLeadEngine()..difficulty = AiDifficulty.hard;
-    engine.playCards(engine.players.first.id, [engine.players.first.hand.first]);
-    engine.pass(engine.state.currentPlayer.id);
-    final expected = engine.toJson();
-    final order = engine.players.first.hand.reversed.toList();
-    await service.save(SavedGame.capture(engine, order));
-    expect(service.hasSavedGame(), isTrue);
-    final restored = service.load()!;
-    expect(restored.engine.toJson(), expected);
-    expect(restored.engine.gameId, engine.gameId);
-    expect(restored.engine.state.currentPlayerIndex, 2);
-    expect(restored.engine.state.currentTableMove, engine.state.currentTableMove);
-    expect(restored.engine.state.passedPlayerIds, {engine.players[1].id});
-    expect(restored.humanCardOrder, order);
-    // Both games must clear the same trick after the remaining players pass.
-    for (final game in [engine, restored.engine]) {
-      expect(game.pass(game.state.currentPlayer.id).isValid, isTrue);
-      expect(game.pass(game.state.currentPlayer.id).isValid, isTrue);
-      expect(game.state.currentTableMove, isNull);
-      expect(game.state.passedPlayerIds, isEmpty);
-      expect(game.state.currentPlayerIndex, 0);
-    }
-    expect(restored.engine.toJson(), engine.toJson());
-  });
+  test(
+    'round trip preserves exact engine and UI state, including trick passes',
+    () async {
+      final engine = humanLeadEngine()..difficulty = AiDifficulty.hard;
+      engine.playCards(engine.players.first.id, [
+        engine.players.first.hand.first,
+      ]);
+      engine.pass(engine.state.currentPlayer.id);
+      final expected = engine.toJson();
+      final order = engine.players.first.hand.reversed.toList();
+      await service.save(SavedGame.capture(engine, order));
+      expect(service.hasSavedGame(), isTrue);
+      final restored = service.load()!;
+      expect(restored.engine.toJson(), expected);
+      expect(restored.engine.gameId, engine.gameId);
+      expect(restored.engine.state.currentPlayerIndex, 2);
+      expect(
+        restored.engine.state.currentTableMove,
+        engine.state.currentTableMove,
+      );
+      expect(restored.engine.state.passedPlayerIds, {engine.players[1].id});
+      expect(restored.humanCardOrder, order);
+      // Both games must clear the same trick after the remaining players pass.
+      for (final game in [engine, restored.engine]) {
+        expect(game.pass(game.state.currentPlayer.id).isValid, isTrue);
+        expect(game.pass(game.state.currentPlayer.id).isValid, isTrue);
+        expect(game.state.currentTableMove, isNull);
+        expect(game.state.passedPlayerIds, isEmpty);
+        expect(game.state.currentPlayerIndex, 0);
+      }
+      expect(restored.engine.toJson(), engine.toJson());
+    },
+  );
 
   test('opening requirement, game ID and full hands survive a fresh deal', () {
     final engine = GameEngine()..startNewGame();
-    final restored = GameEngine.fromJson(jsonDecode(jsonEncode(engine.toJson())) as Map<String, dynamic>);
+    final restored = GameEngine.fromJson(
+      jsonDecode(jsonEncode(engine.toJson())) as Map<String, dynamic>,
+    );
     expect(restored.toJson(), engine.toJson());
     expect(restored.state.openingRuleActive, isTrue);
   });
@@ -65,17 +75,29 @@ void main() {
     next.playCards(next.players.first.id, [next.players.first.hand.single]);
     await service.save(SavedGame.capture(next, []));
     expect(service.hasSavedGame(), isFalse);
-    expect((await SharedPreferences.getInstance()).containsKey(SavedGameService.saveKey), isFalse);
+    expect(
+      (await SharedPreferences.getInstance()).containsKey(
+        SavedGameService.saveKey,
+      ),
+      isFalse,
+    );
   });
 
-  test('queued snapshots cannot overwrite a newer save or completion', () async {
-    final engine = humanLeadEngine(winningHand: true);
-    final pending = service.save(SavedGame.capture(engine, engine.players.first.hand));
-    engine.playCards(engine.players.first.id, [engine.players.first.hand.single]);
-    final clearing = service.save(SavedGame.capture(engine, []));
-    await Future.wait([pending, clearing]);
-    expect(service.load(), isNull);
-  });
+  test(
+    'queued snapshots cannot overwrite a newer save or completion',
+    () async {
+      final engine = humanLeadEngine(winningHand: true);
+      final pending = service.save(
+        SavedGame.capture(engine, engine.players.first.hand),
+      );
+      engine.playCards(engine.players.first.id, [
+        engine.players.first.hand.single,
+      ]);
+      final clearing = service.save(SavedGame.capture(engine, []));
+      await Future.wait([pending, clearing]);
+      expect(service.load(), isNull);
+    },
+  );
 
   test('invalid and unsupported saves are ignored', () async {
     final preferences = await SharedPreferences.getInstance();
@@ -85,41 +107,51 @@ void main() {
     }
   });
 
-  testWidgets('Continue restores order with no selection; leaving keeps the save', (tester) async {
-    final engine = humanLeadEngine();
-    final order = engine.players.first.hand.reversed.toList();
-    await service.save(SavedGame.capture(engine, order));
-    await tester.pumpWidget(const TienLenApp());
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('continue-game-button')));
-    await tester.pumpAndSettle();
-    final screen = tester.widget<GameScreen>(find.byType(GameScreen));
-    expect(screen.engine!.toJson(), engine.toJson());
-    var hand = tester.widget<PlayerHand>(find.byType(PlayerHand));
-    expect(hand.cards, order);
-    expect(hand.selectedCards, isEmpty);
-    hand.onCardTap(order.first);
-    hand.onReorder!(0, 1);
-    await tester.pumpAndSettle();
-    await tester.pageBack();
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Leave'));
-    await tester.pumpAndSettle();
-    expect(find.byKey(const ValueKey('continue-game-button')), findsOneWidget);
-    expect(service.load()!.engine.gameId, engine.gameId);
-    await tester.tap(find.byKey(const ValueKey('continue-game-button')));
-    await tester.pumpAndSettle();
-    hand = tester.widget<PlayerHand>(find.byType(PlayerHand));
-    expect(hand.cards, order.reversed.toList());
-    expect(hand.selectedCards, isEmpty);
-    final stats = PreferencesService(await SharedPreferences.getInstance()).loadStatistics();
-    expect(stats.gamesPlayed, 0);
-    expect(stats.losses, 0);
-    await tester.pumpWidget(const SizedBox());
-    await tester.pumpAndSettle();
-  });
+  testWidgets(
+    'Continue restores order with no selection; leaving keeps the save',
+    (tester) async {
+      final engine = humanLeadEngine();
+      final order = engine.players.first.hand.reversed.toList();
+      await service.save(SavedGame.capture(engine, order));
+      await tester.pumpWidget(const TienLenApp());
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('continue-game-button')));
+      await tester.pumpAndSettle();
+      final screen = tester.widget<GameScreen>(find.byType(GameScreen));
+      expect(screen.engine!.toJson(), engine.toJson());
+      var hand = tester.widget<PlayerHand>(find.byType(PlayerHand));
+      expect(hand.cards, order);
+      expect(hand.selectedCards, isEmpty);
+      hand.onCardTap(order.first);
+      hand.onReorder!(0, 1);
+      await tester.pumpAndSettle();
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Leave'));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('continue-game-button')),
+        findsOneWidget,
+      );
+      expect(service.load()!.engine.gameId, engine.gameId);
+      await tester.tap(find.byKey(const ValueKey('continue-game-button')));
+      await tester.pumpAndSettle();
+      hand = tester.widget<PlayerHand>(find.byType(PlayerHand));
+      expect(hand.cards, order.reversed.toList());
+      expect(hand.selectedCards, isEmpty);
+      final stats = PreferencesService(
+        await SharedPreferences.getInstance(),
+      ).loadStatistics();
+      expect(stats.gamesPlayed, 0);
+      expect(stats.losses, 0);
+      await tester.pumpWidget(const SizedBox());
+      await tester.pumpAndSettle();
+    },
+  );
 
-  testWidgets('Home hides Continue without a save and confirms replacing one', (tester) async {
+  testWidgets('Home hides Continue without a save and confirms replacing one', (
+    tester,
+  ) async {
     await tester.pumpWidget(const TienLenApp());
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('continue-game-button')), findsNothing);
@@ -143,16 +175,22 @@ void main() {
     await tester.pump(const Duration(milliseconds: 350));
     expect(find.byType(GameScreen), findsOneWidget);
     expect(service.load()!.engine.gameId, isNot(engine.gameId));
-    final stats = PreferencesService(await SharedPreferences.getInstance()).loadStatistics();
+    final stats = PreferencesService(
+      await SharedPreferences.getInstance(),
+    ).loadStatistics();
     expect(stats.gamesPlayed, 0);
     expect(stats.losses, 0);
     await tester.pumpWidget(const SizedBox());
     await tester.pumpAndSettle();
   });
 
-  testWidgets('restored AI turn resumes once and completion clears the save', (tester) async {
+  testWidgets('restored AI turn resumes once and completion clears the save', (
+    tester,
+  ) async {
     final engine = humanLeadEngine();
-    engine.playCards(engine.players.first.id, [engine.players.first.hand.first]);
+    engine.playCards(engine.players.first.id, [
+      engine.players.first.hand.first,
+    ]);
     await service.save(SavedGame.capture(engine, engine.players.first.hand));
     await tester.pumpWidget(const TienLenApp());
     await tester.pumpAndSettle();

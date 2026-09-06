@@ -80,34 +80,54 @@ class _PlayerHandState extends State<PlayerHand> {
                       : start + cards.indexOf(card) * step,
                   top: card == _dragged
                       ? -8
-                      : selectedCards.contains(card) ? 0 : 10,
+                      : selectedCards.contains(card)
+                      ? 0
+                      : 10,
                   child: GestureDetector(
-                    onHorizontalDragStart: widget.onReorder == null ? null : (details) {
-                      setState(() {
-                        _dragged = card;
-                        _dragLeft = start + cards.indexOf(card) * step;
-                        _lastPointerX = details.globalPosition.dx;
-                      });
-                    },
-                    onHorizontalDragUpdate: widget.onReorder == null ? null : (details) {
-                      if (_dragged != card) return;
-                      setState(() {
-                        _dragLeft = (_dragLeft + details.globalPosition.dx - _lastPointerX)
-                            .clamp(start, start + (cards.length - 1) * step);
-                        _lastPointerX = details.globalPosition.dx;
-                      });
-                      final oldIndex = cards.indexOf(card);
-                      final newIndex = ((_dragLeft - start) / step)
-                          .round().clamp(0, cards.length - 1);
-                      if (oldIndex != newIndex) widget.onReorder!(oldIndex, newIndex);
-                    },
-                    onHorizontalDragEnd: widget.onReorder == null ? null : (_) => _endDrag(),
-                    onHorizontalDragCancel: widget.onReorder == null ? null : _endDrag,
+                    onHorizontalDragStart: widget.onReorder == null
+                        ? null
+                        : (details) {
+                            setState(() {
+                              _dragged = card;
+                              _dragLeft = start + cards.indexOf(card) * step;
+                              _lastPointerX = details.globalPosition.dx;
+                            });
+                          },
+                    onHorizontalDragUpdate: widget.onReorder == null
+                        ? null
+                        : (details) {
+                            if (_dragged != card) return;
+                            setState(() {
+                              _dragLeft =
+                                  (_dragLeft +
+                                          details.globalPosition.dx -
+                                          _lastPointerX)
+                                      .clamp(
+                                        start,
+                                        start + (cards.length - 1) * step,
+                                      );
+                              _lastPointerX = details.globalPosition.dx;
+                            });
+                            final oldIndex = cards.indexOf(card);
+                            final newIndex = ((_dragLeft - start) / step)
+                                .round()
+                                .clamp(0, cards.length - 1);
+                            if (oldIndex != newIndex)
+                              widget.onReorder!(oldIndex, newIndex);
+                          },
+                    onHorizontalDragEnd: widget.onReorder == null
+                        ? null
+                        : (_) => _endDrag(),
+                    onHorizontalDragCancel: widget.onReorder == null
+                        ? null
+                        : _endDrag,
                     child: PlayingCardWidget(
                       card: card,
                       width: cardWidth,
                       selected: selectedCards.contains(card),
-                      onTap: widget.enabled ? () => widget.onCardTap(card) : null,
+                      onTap: widget.enabled
+                          ? () => widget.onCardTap(card)
+                          : null,
                     ),
                   ),
                 ),

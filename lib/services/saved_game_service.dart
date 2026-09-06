@@ -7,23 +7,29 @@ import '../models/playing_card.dart';
 import '../models/coin_statistics.dart';
 
 class SavedGame {
-  SavedGame({required this.engine, required List<PlayingCard> humanCardOrder,
-    this.stake = 0, this.stakeCommitted = true})
-    : humanCardOrder = List.unmodifiable(humanCardOrder);
+  SavedGame({
+    required this.engine,
+    required List<PlayingCard> humanCardOrder,
+    this.stake = 0,
+    this.stakeCommitted = true,
+  }) : humanCardOrder = List.unmodifiable(humanCardOrder);
 
   final GameEngine engine;
   final int stake;
   final bool stakeCommitted;
   final List<PlayingCard> humanCardOrder;
 
-  factory SavedGame.capture(GameEngine engine, List<PlayingCard> order,
-      {int stake = 0, bool stakeCommitted = true}) =>
-      SavedGame(
-        engine: GameEngine.fromJson(engine.toJson()),
-        humanCardOrder: order,
-        stake: stake,
-        stakeCommitted: stakeCommitted,
-      );
+  factory SavedGame.capture(
+    GameEngine engine,
+    List<PlayingCard> order, {
+    int stake = 0,
+    bool stakeCommitted = true,
+  }) => SavedGame(
+    engine: GameEngine.fromJson(engine.toJson()),
+    humanCardOrder: order,
+    stake: stake,
+    stakeCommitted: stakeCommitted,
+  );
 
   Map<String, dynamic> toJson() => {
     'version': 1,
@@ -34,13 +40,15 @@ class SavedGame {
   };
 
   factory SavedGame.fromJson(Map<String, dynamic> json) {
-    if (json['version'] != 1) throw const FormatException('Unknown save version');
+    if (json['version'] != 1)
+      throw const FormatException('Unknown save version');
     final engine = GameEngine.fromJson(json['engine'] as Map<String, dynamic>);
     final order = (json['humanCardOrder'] as List)
         .map((card) => PlayingCard.fromJson(card as Map<String, dynamic>))
         .toList();
     final hand = engine.players.first.hand;
-    if (order.length != hand.length || order.toSet().length != order.length ||
+    if (order.length != hand.length ||
+        order.toSet().length != order.length ||
         !order.every(hand.contains)) {
       throw const FormatException('Invalid saved display order');
     }
@@ -49,8 +57,12 @@ class SavedGame {
     if (!CoinEconomy.stakes.contains(stake) || !committed) {
       throw const FormatException('Invalid saved stake');
     }
-    return SavedGame(engine: engine, humanCardOrder: order,
-      stake: stake, stakeCommitted: committed);
+    return SavedGame(
+      engine: engine,
+      humanCardOrder: order,
+      stake: stake,
+      stakeCommitted: committed,
+    );
   }
 }
 
@@ -84,9 +96,12 @@ class SavedGameService {
     final encoded = _preferences.getString(saveKey);
     if (encoded == null) return null;
     try {
-      final saved = SavedGame.fromJson(jsonDecode(encoded) as Map<String, dynamic>);
+      final saved = SavedGame.fromJson(
+        jsonDecode(encoded) as Map<String, dynamic>,
+      );
       return saved.engine.state.isActive && saved.engine.state.winner == null
-          ? saved : null;
+          ? saved
+          : null;
     } on Object {
       // Corrupt or incompatible saves must not prevent opening Home.
       return null;

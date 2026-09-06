@@ -49,15 +49,28 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   CoinStatistics? _resultCoins;
 
   Future<void> _saveGame() async {
-    final snapshot = SavedGame.capture(_engine, _humanCardOrder,
-      stake: _stake, stakeCommitted: _stakeCommitted);
+    final snapshot = SavedGame.capture(
+      _engine,
+      _humanCardOrder,
+      stake: _stake,
+      stakeCommitted: _stakeCommitted,
+    );
     final winner = snapshot.engine.state.winner;
     if (winner != null) {
       final preferences = mounted ? PreferencesScope.maybeOf(context) : null;
       final coins = preferences != null
-          ? await preferences.settleGame(snapshot.engine.gameId, snapshot.stake, winner.isHuman)
-          : await (PreferencesService(await SharedPreferences.getInstance()))
-              .settleGame(gameId: snapshot.engine.gameId, stake: snapshot.stake, humanWon: winner.isHuman);
+          ? await preferences.settleGame(
+              snapshot.engine.gameId,
+              snapshot.stake,
+              winner.isHuman,
+            )
+          : await (PreferencesService(
+              await SharedPreferences.getInstance(),
+            )).settleGame(
+              gameId: snapshot.engine.gameId,
+              stake: snapshot.stake,
+              humanWon: winner.isHuman,
+            );
       if (mounted && _engine.gameId == snapshot.engine.gameId) {
         setState(() => _resultCoins = coins);
       }
@@ -67,10 +80,12 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
       unawaited(_saveGame());
     }
   }
+
   late GameEngine _engine;
   final Set<PlayingCard> _selected = <PlayingCard>{};
   final GameSounds _sounds = GameSounds();
@@ -111,6 +126,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       _leaveDialogOpen = false;
     }
   }
+
   List<PlayingCard> _humanCardOrder = [];
   int _aiRun = 0;
   Timer? _aiTimer;
@@ -123,8 +139,10 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     _engine = widget.engine ?? (GameEngine()..startNewGame());
     _stake = widget.stake;
     _stakeCommitted = widget.stakeCommitted;
-    _humanCardOrder = (widget.initialHumanCardOrder ?? _engine.players.first.hand)
-        .toSet().toList();
+    _humanCardOrder =
+        (widget.initialHumanCardOrder ?? _engine.players.first.hand)
+            .toSet()
+            .toList();
     _syncHumanCardOrder();
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -149,7 +167,8 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     final preferences = PreferencesScope.maybeOf(context);
     _sounds.setEnabled(preferences?.soundsEnabled ?? true);
     if (preferences != null) {
-      final preserveRestoredDifficulty = _lastPreferenceDifficulty == null &&
+      final preserveRestoredDifficulty =
+          _lastPreferenceDifficulty == null &&
           widget.initialHumanCardOrder != null;
       if (!preserveRestoredDifficulty &&
           _lastPreferenceDifficulty != preferences.difficulty &&
@@ -332,8 +351,9 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     final coins = _resultCoins;
     if (coins == null) return null;
     final net = CoinEconomy.netChange(_stake, humanWon);
-    final outcome = net == 0 ? loc.noCoinChange :
-        loc.coinAmount('${net > 0 ? '+' : ''}$net');
+    final outcome = net == 0
+        ? loc.noCoinChange
+        : loc.coinAmount('${net > 0 ? '+' : ''}$net');
     return '$outcome\n${loc.coinBalanceAmount(coins.balance)}';
   }
 
@@ -351,131 +371,134 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
         unawaited(_confirmLeave());
       },
       child: Scaffold(
-      appBar: AppBar(
-        title: Text(loc.appTitle),
-        bottom: WalletStatusRow(
-          trailing: StakePill(key: const ValueKey('game-stake'), stake: _stake),
-        ),
-        actions: [
-          IconButton(
-            tooltip: loc.settings,
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (_) => const SettingsScreen(),
-              ),
+        appBar: AppBar(
+          title: Text(loc.appTitle),
+          bottom: WalletStatusRow(
+            trailing: StakePill(
+              key: const ValueKey('game-stake'),
+              stake: _stake,
             ),
-            icon: const Icon(Icons.tune_rounded),
           ),
-          IconButton(
-            tooltip: loc.newGame,
-            onPressed: _newGame,
-            icon: const Icon(Icons.refresh_rounded),
-          ),
-        ],
-      ),
-      body: SafeArea(
-        top: false,
-        child: Stack(
-          children: [
-            Column(
-              children: [
-                Expanded(
-                  child: _TableSurface(
-                    engine: _engine,
-                    nameFor: (player) => _name(player, loc),
-                  ),
-                ),
-                Container(
-                  color: Theme.of(context).colorScheme.surface,
-                  padding: const EdgeInsets.fromLTRB(12, 4, 12, 2),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 180),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 3,
-                        ),
-                        decoration: BoxDecoration(
-                          color: humanTurn
-                              ? Theme.of(context).colorScheme.primaryContainer
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          humanTurn
-                              ? loc.yourTurn
-                              : loc.playerTurn(_name(state.currentPlayer, loc)),
-                          key: const ValueKey('turn-label'),
-                          style: TextStyle(
-                            fontWeight: FontWeight.w700,
-                            color: humanTurn
-                                ? Theme.of(
-                                    context,
-                                  ).colorScheme.onPrimaryContainer
-                                : Theme.of(
-                                    context,
-                                  ).colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton(
-                              key: const ValueKey('pass-button'),
-                              onPressed:
-                                  humanTurn && state.currentTableMove != null
-                                  ? _pass
-                                  : null,
-                              child: Text(loc.pass),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: FilledButton(
-                              key: const ValueKey('play-button'),
-                              onPressed: humanTurn && _selected.isNotEmpty
-                                  ? _play
-                                  : null,
-                              child: Text(loc.play),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  color: Theme.of(context).colorScheme.surface,
-                  padding: const EdgeInsets.fromLTRB(8, 0, 8, 3),
-                  child: PlayerHand(
-                    cards: _humanCardOrder,
-                    onReorder: state.isActive ? _reorderHand : null,
-                    selectedCards: _selected,
-                    onCardTap: _toggleCard,
-                    enabled: humanTurn,
-                  ),
-                ),
-              ],
-            ),
-            if (state.winner != null)
-              Positioned.fill(
-                child: _GameOverOverlay(
-                  title: loc.gameOver,
-                  message: state.winner!.isHuman
-                      ? loc.youWin
-                      : loc.playerWins(_name(state.winner!, loc)),
-                  buttonLabel: loc.newGame,
-                  coinResult: _coinResultText(loc, state.winner!.isHuman),
-                  onNewGame: _newGame,
-                ),
+          actions: [
+            IconButton(
+              tooltip: loc.settings,
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const SettingsScreen()),
               ),
+              icon: const Icon(Icons.tune_rounded),
+            ),
+            IconButton(
+              tooltip: loc.newGame,
+              onPressed: _newGame,
+              icon: const Icon(Icons.refresh_rounded),
+            ),
           ],
         ),
-      ),
+        body: SafeArea(
+          top: false,
+          child: Stack(
+            children: [
+              Column(
+                children: [
+                  Expanded(
+                    child: _TableSurface(
+                      engine: _engine,
+                      nameFor: (player) => _name(player, loc),
+                    ),
+                  ),
+                  Container(
+                    color: Theme.of(context).colorScheme.surface,
+                    padding: const EdgeInsets.fromLTRB(12, 4, 12, 2),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 180),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: humanTurn
+                                ? Theme.of(context).colorScheme.primaryContainer
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            humanTurn
+                                ? loc.yourTurn
+                                : loc.playerTurn(
+                                    _name(state.currentPlayer, loc),
+                                  ),
+                            key: const ValueKey('turn-label'),
+                            style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              color: humanTurn
+                                  ? Theme.of(
+                                      context,
+                                    ).colorScheme.onPrimaryContainer
+                                  : Theme.of(
+                                      context,
+                                    ).colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                key: const ValueKey('pass-button'),
+                                onPressed:
+                                    humanTurn && state.currentTableMove != null
+                                    ? _pass
+                                    : null,
+                                child: Text(loc.pass),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: FilledButton(
+                                key: const ValueKey('play-button'),
+                                onPressed: humanTurn && _selected.isNotEmpty
+                                    ? _play
+                                    : null,
+                                child: Text(loc.play),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    color: Theme.of(context).colorScheme.surface,
+                    padding: const EdgeInsets.fromLTRB(8, 0, 8, 3),
+                    child: PlayerHand(
+                      cards: _humanCardOrder,
+                      onReorder: state.isActive ? _reorderHand : null,
+                      selectedCards: _selected,
+                      onCardTap: _toggleCard,
+                      enabled: humanTurn,
+                    ),
+                  ),
+                ],
+              ),
+              if (state.winner != null)
+                Positioned.fill(
+                  child: _GameOverOverlay(
+                    title: loc.gameOver,
+                    message: state.winner!.isHuman
+                        ? loc.youWin
+                        : loc.playerWins(_name(state.winner!, loc)),
+                    buttonLabel: loc.newGame,
+                    coinResult: _coinResultText(loc, state.winner!.isHuman),
+                    onNewGame: _newGame,
+                  ),
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -511,7 +534,12 @@ class _TableSurface extends StatelessWidget {
       key: const ValueKey('game-table'),
       width: double.infinity,
       decoration: const BoxDecoration(
-        color: Color(0xFF194A3B),
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFF12382D), Color(0xFF194A3B), Color(0xFF103127)],
+          stops: [0, .48, 1],
+        ),
         boxShadow: [
           BoxShadow(
             color: Color(0x33000000),
@@ -522,6 +550,19 @@ class _TableSurface extends StatelessWidget {
       ),
       child: Stack(
         children: [
+          const Positioned.fill(
+            child: IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: RadialGradient(
+                    center: Alignment(0, -.1),
+                    radius: .9,
+                    colors: [Color(0x242F8062), Color(0x002F8062)],
+                  ),
+                ),
+              ),
+            ),
+          ),
           Positioned(
             top: 12,
             left: 12,
@@ -623,8 +664,11 @@ class _GameOverOverlay extends StatelessWidget {
                     ),
                     if (coinResult != null) ...[
                       const SizedBox(height: 12),
-                      Text(coinResult!, key: const ValueKey('coin-result'),
-                        textAlign: TextAlign.center),
+                      Text(
+                        coinResult!,
+                        key: const ValueKey('coin-result'),
+                        textAlign: TextAlign.center,
+                      ),
                     ],
                     const SizedBox(height: 22),
                     SizedBox(

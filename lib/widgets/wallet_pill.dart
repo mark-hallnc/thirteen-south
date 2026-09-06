@@ -18,13 +18,23 @@ class WalletPill extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: ShapeDecoration(
           color: theme.colorScheme.surfaceContainerLow,
-          shape: StadiumBorder(side: BorderSide(color: theme.colorScheme.outlineVariant)),
+          shape: StadiumBorder(
+            side: BorderSide(color: theme.colorScheme.outlineVariant),
+          ),
         ),
-        child: Row(mainAxisSize: MainAxisSize.min, children: [
-          Image.asset('assets/coins/single_coin.png', width: 26, height: 26),
-          const SizedBox(width: 8),
-          Text('$balance', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
-        ]),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset('assets/coins/single_coin.png', width: 26, height: 26),
+            const SizedBox(width: 8),
+            Text(
+              '$balance',
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -45,9 +55,14 @@ class WalletStatusRow extends StatelessWidget implements PreferredSizeWidget {
     child: Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        Flexible(child: FittedBox(fit: BoxFit.scaleDown, child: WalletPill(
-          balance: PreferencesScope.maybeOf(context)?.coinBalance ?? 500,
-        ))),
+        Flexible(
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: WalletPill(
+              balance: PreferencesScope.maybeOf(context)?.coinBalance ?? 500,
+            ),
+          ),
+        ),
         if (trailing != null) ...[
           const SizedBox(width: 10),
           Flexible(child: trailing!),

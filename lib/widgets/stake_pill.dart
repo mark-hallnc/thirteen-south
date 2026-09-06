@@ -15,9 +15,14 @@ class StakePill extends StatelessWidget {
         color: theme.colorScheme.secondaryContainer,
         shape: const StadiumBorder(),
       ),
-      child: Text(stake == 0 ? loc.freePlay : loc.stakeAmount(stake),
-        maxLines: 1, overflow: TextOverflow.ellipsis,
-        style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.onSecondaryContainer)),
+      child: Text(
+        stake == 0 ? loc.freePlay : loc.stakeAmount(stake),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: theme.textTheme.labelLarge?.copyWith(
+          color: theme.colorScheme.onSecondaryContainer,
+        ),
+      ),
     );
   }
 }

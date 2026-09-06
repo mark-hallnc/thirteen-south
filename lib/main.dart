@@ -36,17 +36,27 @@ class _TienLenAppState extends State<TienLenApp> {
   CoinStatistics _coins = const CoinStatistics();
 
   Future<bool> _commitStake(String gameId, int stake) async {
-    final service = _preferencesService ??
+    final service =
+        _preferencesService ??
         PreferencesService(await SharedPreferences.getInstance());
     final committed = await service.commitStake(gameId, stake);
     if (mounted) setState(() => _coins = service.loadCoins());
     return committed;
   }
 
-  Future<CoinStatistics> _settleGame(String gameId, int stake, bool humanWon) async {
-    final service = _preferencesService ??
+  Future<CoinStatistics> _settleGame(
+    String gameId,
+    int stake,
+    bool humanWon,
+  ) async {
+    final service =
+        _preferencesService ??
         PreferencesService(await SharedPreferences.getInstance());
-    final coins = await service.settleGame(gameId: gameId, stake: stake, humanWon: humanWon);
+    final coins = await service.settleGame(
+      gameId: gameId,
+      stake: stake,
+      humanWon: humanWon,
+    );
     if (mounted) setState(() => _coins = coins);
     return coins;
   }
@@ -80,7 +90,8 @@ class _TienLenAppState extends State<TienLenApp> {
 
   Future<void> _setSoundsEnabled(bool enabled) async {
     setState(() => _soundsEnabled = enabled);
-    final service = _preferencesService ??
+    final service =
+        _preferencesService ??
         PreferencesService(await SharedPreferences.getInstance());
     _preferencesService = service;
     await service.saveSoundsEnabled(enabled);

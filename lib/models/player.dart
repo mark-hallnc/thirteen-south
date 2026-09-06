@@ -29,9 +29,11 @@ class Player {
       isHuman: json['isHuman'] as bool,
     );
     // Restore the recorded engine order without sorting or dealing.
-    player._hand.addAll((json['hand'] as List).map(
-      (card) => PlayingCard.fromJson(card as Map<String, dynamic>),
-    ));
+    player._hand.addAll(
+      (json['hand'] as List).map(
+        (card) => PlayingCard.fromJson(card as Map<String, dynamic>),
+      ),
+    );
     return player;
   }
   final String displayName;

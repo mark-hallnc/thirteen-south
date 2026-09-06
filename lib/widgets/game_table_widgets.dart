@@ -194,10 +194,7 @@ class OpponentPanel extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 2),
-              SizedBox(
-                height: 64,
-                child: label(),
-              ),
+              SizedBox(height: 64, child: label()),
             ],
           );
     return Semantics(

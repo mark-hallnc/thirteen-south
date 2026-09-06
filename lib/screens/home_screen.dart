@@ -100,17 +100,46 @@ class _HomeScreenState extends State<HomeScreen> {
               constraints: const BoxConstraints(maxWidth: 420),
               child: Column(
                 children: [
-                  const HomeHeroGraphic(),
-                  const SizedBox(height: 18),
-                  Text(
-                    loc.appTitle,
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -.8,
+                  Container(
+                    key: const ValueKey('home-header-panel'),
+                    width: double.infinity,
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(28),
+                      gradient: const RadialGradient(
+                        center: Alignment(0, -.45),
+                        radius: 1.1,
+                        colors: [Color(0xFF2A5B4B), Color(0xFF143B30)],
+                      ),
+                      border: Border.all(color: const Color(0xFF426658)),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color(0x18103329),
+                          blurRadius: 20,
+                          offset: Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const HomeHeroGraphic(),
+                        const SizedBox(height: 12),
+                        Text(
+                          loc.appTitle,
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.displaySmall
+                              ?.copyWith(
+                                color: const Color(0xFFF6F4EA),
+                                fontWeight: FontWeight.w700,
+                                height: 1.12,
+                                letterSpacing: -.6,
+                              ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 24),
                   if (_hasSave) ...[
                     SizedBox(
                       width: double.infinity,
@@ -128,10 +157,16 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: FilledButton.icon(
                       key: const ValueKey('new-game-button'),
                       onPressed: _openGame,
-                      style: _hasSave ? FilledButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
-                        foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
-                      ) : null,
+                      style: _hasSave
+                          ? FilledButton.styleFrom(
+                              backgroundColor: Theme.of(
+                                context,
+                              ).colorScheme.secondaryContainer,
+                              foregroundColor: Theme.of(
+                                context,
+                              ).colorScheme.onSecondaryContainer,
+                            )
+                          : null,
                       icon: const Icon(Icons.play_arrow_rounded),
                       label: Text(loc.newGame),
                     ),

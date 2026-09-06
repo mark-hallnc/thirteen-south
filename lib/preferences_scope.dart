@@ -27,7 +27,8 @@ class PreferencesScope extends InheritedWidget {
   int get coinsWon => coins.won;
   int get coinsLost => coins.lost;
   final Future<bool> Function(String gameId, int stake) commitStake;
-  final Future<CoinStatistics> Function(String gameId, int stake, bool humanWon) settleGame;
+  final Future<CoinStatistics> Function(String gameId, int stake, bool humanWon)
+  settleGame;
   final bool soundsEnabled;
   final Future<void> Function(bool enabled) setSoundsEnabled;
   final GameStatistics statistics;
@@ -45,5 +46,6 @@ class PreferencesScope extends InheritedWidget {
   bool updateShouldNotify(PreferencesScope oldWidget) =>
       coins != oldWidget.coins ||
       soundsEnabled != oldWidget.soundsEnabled ||
-      difficulty != oldWidget.difficulty || statistics != oldWidget.statistics;
+      difficulty != oldWidget.difficulty ||
+      statistics != oldWidget.statistics;
 }

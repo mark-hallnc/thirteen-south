@@ -60,8 +60,9 @@ void main() {
       expect(hand().cards, displayOrder);
       expect(hand().selectedCards, {engineHand.first});
       expect(
-        PreferencesScope.of(tester.element(find.byType(GameScreen)))
-            .soundsEnabled,
+        PreferencesScope.of(
+          tester.element(find.byType(GameScreen)),
+        ).soundsEnabled,
         enabled,
       );
     }
@@ -118,10 +119,14 @@ void main() {
     await tester.pumpWidget(const TienLenApp());
     await tester.pumpAndSettle();
     final engine = humanLeadEngine(winningHand: true);
-    engine.playCards(engine.players.first.id, [engine.players.first.hand.single]);
-    tester.state<NavigatorState>(find.byType(Navigator)).push<void>(
-      MaterialPageRoute<void>(builder: (_) => GameScreen(engine: engine)),
-    );
+    engine.playCards(engine.players.first.id, [
+      engine.players.first.hand.single,
+    ]);
+    tester
+        .state<NavigatorState>(find.byType(Navigator))
+        .push<void>(
+          MaterialPageRoute<void>(builder: (_) => GameScreen(engine: engine)),
+        );
     await tester.pumpAndSettle();
     await tester.pageBack();
     await tester.pumpAndSettle();
@@ -146,28 +151,34 @@ void main() {
     var enabled = true;
     late StateSetter update;
     var builds = 0;
-    final child = Builder(builder: (context) {
-      builds++;
-      return Text('${PreferencesScope.of(context).soundsEnabled}');
-    });
-    await tester.pumpWidget(MaterialApp(home: StatefulBuilder(
-      builder: (context, setState) {
-        update = setState;
-        return PreferencesScope(
-          coins: const CoinStatistics(),
-          commitStake: (_, _) async => true,
-          settleGame: (_, _, _) async => const CoinStatistics(),
-          difficulty: AiDifficulty.normal,
-          statistics: const GameStatistics(),
-          soundsEnabled: enabled,
-          setSoundsEnabled: (_) async {},
-          setDifficulty: (_) async {},
-          recordGameResult: (_, _) async {},
-          resetStatistics: () async {},
-          child: child,
-        );
+    final child = Builder(
+      builder: (context) {
+        builds++;
+        return Text('${PreferencesScope.of(context).soundsEnabled}');
       },
-    )));
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: StatefulBuilder(
+          builder: (context, setState) {
+            update = setState;
+            return PreferencesScope(
+              coins: const CoinStatistics(),
+              commitStake: (_, _) async => true,
+              settleGame: (_, _, _) async => const CoinStatistics(),
+              difficulty: AiDifficulty.normal,
+              statistics: const GameStatistics(),
+              soundsEnabled: enabled,
+              setSoundsEnabled: (_) async {},
+              setDifficulty: (_) async {},
+              recordGameResult: (_, _) async {},
+              resetStatistics: () async {},
+              child: child,
+            );
+          },
+        ),
+      ),
+    );
     final before = builds;
     update(() => enabled = false);
     await tester.pump();
@@ -178,7 +189,9 @@ void main() {
     expect(builds, before + 1);
   });
 
-  testWidgets('sound switch reflects persisted value and updates it', (tester) async {
+  testWidgets('sound switch reflects persisted value and updates it', (
+    tester,
+  ) async {
     SharedPreferences.setMockInitialValues({'sounds_enabled': false});
     await tester.pumpWidget(const TienLenApp());
     await tester.pumpAndSettle();
@@ -190,10 +203,15 @@ void main() {
     await tester.tap(toggle);
     await tester.pumpAndSettle();
     expect(tester.widget<SwitchListTile>(toggle).value, isTrue);
-    expect((await SharedPreferences.getInstance()).getBool('sounds_enabled'), isTrue);
+    expect(
+      (await SharedPreferences.getInstance()).getBool('sounds_enabled'),
+      isTrue,
+    );
   });
 
-  testWidgets('display order preserves engine order, plays, and resets', (tester) async {
+  testWidgets('display order preserves engine order, plays, and resets', (
+    tester,
+  ) async {
     final engine = humanLeadEngine();
     engine.players.first.replaceHand([
       const PlayingCard(CardRank.three, CardSuit.spades),
@@ -202,7 +220,9 @@ void main() {
       const PlayingCard(CardRank.seven, CardSuit.spades),
     ]);
     final original = List<PlayingCard>.of(engine.players.first.hand);
-    await tester.pumpWidget(localizedGame(engine, aiDelay: const Duration(hours: 1)));
+    await tester.pumpWidget(
+      localizedGame(engine, aiDelay: const Duration(hours: 1)),
+    );
     PlayerHand hand() => tester.widget<PlayerHand>(find.byType(PlayerHand));
     expect(hand().cards, original);
     hand().onReorder!(3, 1);
@@ -231,28 +251,48 @@ void main() {
     await tester.pumpWidget(const SizedBox());
   });
 
-  testWidgets('horizontal drag reorders without selecting; taps still select', (tester) async {
+  testWidgets('horizontal drag reorders without selecting; taps still select', (
+    tester,
+  ) async {
     final cards = [
-      for (final rank in [CardRank.three, CardRank.four, CardRank.five, CardRank.six])
+      for (final rank in [
+        CardRank.three,
+        CardRank.four,
+        CardRank.five,
+        CardRank.six,
+      ])
         PlayingCard(rank, CardSuit.spades),
     ];
     final selected = <PlayingCard>{};
     final last = cards.last;
-    await tester.pumpWidget(MaterialApp(home: Scaffold(body: Center(
-      child: SizedBox(width: 300, child: StatefulBuilder(builder: (context, update) {
-        return PlayerHand(
-          cards: cards,
-          selectedCards: selected,
-          enabled: true,
-          onCardTap: (card) => update(() {
-            selected.contains(card) ? selected.remove(card) : selected.add(card);
-          }),
-          onReorder: (oldIndex, newIndex) => update(() {
-            cards.insert(newIndex, cards.removeAt(oldIndex));
-          }),
-        );
-      })),
-    ))));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: SizedBox(
+              width: 300,
+              child: StatefulBuilder(
+                builder: (context, update) {
+                  return PlayerHand(
+                    cards: cards,
+                    selectedCards: selected,
+                    enabled: true,
+                    onCardTap: (card) => update(() {
+                      selected.contains(card)
+                          ? selected.remove(card)
+                          : selected.add(card);
+                    }),
+                    onReorder: (oldIndex, newIndex) => update(() {
+                      cards.insert(newIndex, cards.removeAt(oldIndex));
+                    }),
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
     final target = find.byKey(ValueKey(last));
     await tester.drag(target, const Offset(-110, 0));
     await tester.pumpAndSettle();
