@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tien_len/widgets/game_dialog.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tien_len/ai/ai_difficulty.dart';
@@ -91,7 +92,7 @@ void main() {
     await tester.pageBack();
     await tester.pumpAndSettle();
     expect(find.text('Leave game?'), findsOneWidget);
-    expect(find.byType(AlertDialog), findsOneWidget);
+    expect(find.byType(GameDialog), findsOneWidget);
     await tester.tap(find.text('Cancel'));
     await tester.pumpAndSettle();
     expect(tester.state(find.byType(GameScreen)), same(screenState));

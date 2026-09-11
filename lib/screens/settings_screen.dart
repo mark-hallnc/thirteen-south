@@ -5,6 +5,7 @@ import '../ai/ai_difficulty.dart';
 import '../locale_controller_scope.dart';
 import '../preferences_scope.dart';
 import '../widgets/wallet_pill.dart';
+import '../widgets/game_dialog.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -200,19 +201,19 @@ class SettingsScreen extends StatelessWidget {
     final loc = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(loc.resetStatisticsTitle),
-        content: Text(loc.resetStatisticsMessage),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(loc.cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(loc.reset),
-          ),
-        ],
+      builder: (context) => GameDialog(
+        icon: Icons.restart_alt_rounded,
+        warning: true,
+        title: loc.resetStatisticsTitle,
+        message: loc.resetStatisticsMessage,
+        secondaryAction: TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: Text(loc.cancel),
+        ),
+        primaryAction: FilledButton(
+          onPressed: () => Navigator.pop(context, true),
+          child: Text(loc.reset),
+        ),
       ),
     );
     if (confirmed == true) await preferences.resetStatistics();

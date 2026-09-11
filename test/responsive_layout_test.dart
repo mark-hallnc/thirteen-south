@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tien_len/widgets/game_dialog.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tien_len/main.dart';
@@ -42,7 +43,7 @@ void main() {
         await tester.ensureVisible(button);
         await tester.tap(button);
         await tester.pumpAndSettle();
-        expect(find.text('Wager'), findsOneWidget);
+        expect(find.text('Choose Your Wager'), findsOneWidget);
         await tester.tap(find.byKey(const ValueKey('close-wager')));
         await tester.pumpAndSettle();
       }
@@ -79,11 +80,14 @@ void main() {
       await tester.tap(find.byType(BackButton));
       await tester.pumpAndSettle();
       expect(find.text('Leave game?'), findsOneWidget);
+      expect(find.byType(GameDialog), findsOneWidget);
+      expect(find.byType(AlertDialog), findsNothing);
       await tester.tap(find.text('Cancel'));
       await tester.pumpAndSettle();
       await tester.tap(find.byTooltip('New Game'));
       await tester.pumpAndSettle();
       expect(find.text('Your saved game will be replaced.'), findsOneWidget);
+      expect(find.byType(GameDialog), findsOneWidget);
       await tester.tap(find.text('Cancel'));
       await tester.pumpAndSettle();
       expect(engine.gameId, gameId);

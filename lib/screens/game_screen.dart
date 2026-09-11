@@ -16,6 +16,7 @@ import '../services/preferences_service.dart';
 import '../models/coin_statistics.dart';
 import '../widgets/stake_selector.dart';
 import '../widgets/wallet_pill.dart';
+import '../widgets/game_dialog.dart';
 import '../widgets/game_table_widgets.dart';
 import '../widgets/player_hand.dart';
 import '../widgets/game_layout_sizes.dart';
@@ -108,19 +109,18 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     try {
       final confirmed = await showDialog<bool>(
         context: context,
-        builder: (context) => AlertDialog(
-          title: Text(loc.leaveGameTitle),
-          content: Text(loc.leaveGameMessage),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: Text(loc.cancel),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: Text(loc.leave),
-            ),
-          ],
+        builder: (context) => GameDialog(
+          icon: Icons.logout_rounded,
+          title: loc.leaveGameTitle,
+          message: loc.leaveGameMessage,
+          secondaryAction: TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(loc.cancel),
+          ),
+          primaryAction: FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(loc.leave),
+          ),
         ),
       );
       if (!mounted || confirmed != true) return;
@@ -278,19 +278,18 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       final loc = AppLocalizations.of(context)!;
       final confirmed = await showDialog<bool>(
         context: context,
-        builder: (context) => AlertDialog(
-          title: Text(loc.startNewGameTitle),
-          content: Text(loc.replaceSavedGameMessage),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: Text(loc.cancel),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: Text(loc.startNewGame),
-            ),
-          ],
+        builder: (context) => GameDialog(
+          icon: Icons.refresh_rounded,
+          title: loc.startNewGameTitle,
+          message: loc.replaceSavedGameMessage,
+          secondaryAction: TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(loc.cancel),
+          ),
+          primaryAction: FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(loc.startNewGame),
+          ),
         ),
       );
       if (!mounted || confirmed != true) {
@@ -347,9 +346,38 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       MoveValidationReason.cardNotInHand => loc.cardNotInHand,
       _ => loc.invalidMove,
     };
+    final style = GameModalStyle(context);
+    final sizes = GameLayoutSizes(context);
     ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
+      ..removeCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: style.surface,
+          elevation: 4,
+          shape: style.shape,
+          margin: EdgeInsets.fromLTRB(
+            16,
+            0,
+            16,
+            (sizes.humanCard * 1.42 + sizes.controlHeight + 48).clamp(
+              0.0,
+              MediaQuery.sizeOf(context).height * .45,
+            ),
+          ),
+          content: Row(
+            key: const ValueKey('game-notice'),
+            children: [
+              Icon(Icons.info_outline_rounded, color: style.accent, size: 22),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(message, style: TextStyle(color: style.body)),
+              ),
+            ],
+          ),
+        ),
+      );
   }
 
   String _name(Player player, AppLocalizations loc) {
@@ -743,6 +771,7 @@ class _GameOverOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final style = GameModalStyle(context);
     return ColoredBox(
       color: Colors.black.withValues(alpha: .55),
       child: Center(
@@ -752,6 +781,11 @@ class _GameOverOverlay extends StatelessWidget {
           builder: (context, scale, child) =>
               Transform.scale(scale: scale, child: child),
           child: Card(
+            color: style.surface,
+            surfaceTintColor: Colors.transparent,
+            shape: style.shape,
+            elevation: 8,
+            shadowColor: Colors.black.withValues(alpha: .24),
             margin: const EdgeInsets.all(28),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 320),
@@ -760,26 +794,31 @@ class _GameOverOverlay extends StatelessWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.style_rounded,
-                      size: 38,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
+                    const GameDialogEmblem(icon: Icons.style_rounded),
                     const SizedBox(height: 12),
                     Text(
                       title,
-                      style: Theme.of(context).textTheme.headlineSmall,
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(
+                            color: style.title,
+                            fontWeight: FontWeight.w700,
+                          ),
+                      textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 6),
                     Text(
                       message,
-                      style: Theme.of(context).textTheme.titleMedium,
+                      style: Theme.of(
+                        context,
+                      ).textTheme.titleMedium?.copyWith(color: style.body),
+                      textAlign: TextAlign.center,
                     ),
                     if (coinResult != null) ...[
                       const SizedBox(height: 12),
                       Text(
                         coinResult!,
                         key: const ValueKey('coin-result'),
+                        style: TextStyle(color: style.body),
                         textAlign: TextAlign.center,
                       ),
                     ],
@@ -787,6 +826,7 @@ class _GameOverOverlay extends StatelessWidget {
                     SizedBox(
                       width: double.infinity,
                       child: FilledButton(
+                        style: style.primaryButton,
                         onPressed: onNewGame,
                         child: Text(buttonLabel),
                       ),

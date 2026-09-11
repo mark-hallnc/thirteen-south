@@ -98,11 +98,11 @@ abstract class AppLocalizations {
     Locale('vi'),
   ];
 
-  /// No description provided for @wager.
+  /// No description provided for @chooseYourWager.
   ///
   /// In en, this message translates to:
-  /// **'Wager'**
-  String get wager;
+  /// **'Choose Your Wager'**
+  String get chooseYourWager;
 
   /// No description provided for @coins.
   ///

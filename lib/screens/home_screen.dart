@@ -4,6 +4,7 @@ import 'package:tien_len/l10n/app_localizations.dart';
 import '../widgets/home_hero_graphic.dart';
 import '../widgets/stake_selector.dart';
 import '../widgets/wallet_pill.dart';
+import '../widgets/game_dialog.dart';
 import '../services/saved_game_service.dart';
 import 'game_screen.dart';
 import 'rules_screen.dart';
@@ -47,19 +48,18 @@ class _HomeScreenState extends State<HomeScreen> {
         final loc = AppLocalizations.of(context)!;
         final confirmed = await showDialog<bool>(
           context: context,
-          builder: (context) => AlertDialog(
-            title: Text(loc.startNewGameTitle),
-            content: Text(loc.replaceSavedGameMessage),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: Text(loc.cancel),
-              ),
-              FilledButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: Text(loc.startNewGame),
-              ),
-            ],
+          builder: (context) => GameDialog(
+            icon: Icons.refresh_rounded,
+            title: loc.startNewGameTitle,
+            message: loc.replaceSavedGameMessage,
+            secondaryAction: TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(loc.cancel),
+            ),
+            primaryAction: FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text(loc.startNewGame),
+            ),
           ),
         );
         if (confirmed != true || !mounted) return;

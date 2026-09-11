@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tien_len/l10n/app_localizations.dart';
 
 import '../game/game_engine.dart';
+import 'game_dialog.dart';
 import '../models/coin_statistics.dart';
 import '../preferences_scope.dart';
 import '../services/preferences_service.dart';
@@ -29,111 +30,75 @@ class _StakeSelectorState extends State<StakeSelector> {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
-    final theme = Theme.of(context);
+
     final dialogWidth = (MediaQuery.sizeOf(context).width - 32)
         .clamp(0.0, 380.0)
         .toDouble();
-    final optionWidth = ((dialogWidth - 48 - 10) / 2)
+    final optionWidth = ((dialogWidth - 48 - 12) / 2)
         .clamp(0.0, 156.0)
         .toDouble();
-    return Dialog(
-      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 380),
-        child: SizedBox(
-          width: dialogWidth,
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+    return GameDialog(
+      title: loc.chooseYourWager,
+      onClose: () => _choose(null),
+      closeKey: const ValueKey('close-wager'),
+      header: GameDialogEmblem(
+        child: Image.asset(
+          'assets/coins/single_coin.png',
+          width: 72,
+          height: 72,
+          excludeFromSemantics: true,
+        ),
+      ),
+      body: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (widget.balance < 10) ...[
+            Text(
+              loc.notEnoughCoins,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: GameModalStyle(context).body,
+              ),
+            ),
+            const SizedBox(height: 16),
+            OutlinedButton(
+              key: const ValueKey('earn-coins'),
+              onPressed: () => showDialog<void>(
+                context: context,
+                builder: (context) => GameDialog(
+                  title: loc.comingSoon,
+                  icon: Icons.ondemand_video_rounded,
+                  onClose: () => Navigator.pop(context),
+                  closeKey: const ValueKey('close-coming-soon'),
+                ),
+              ),
+              child: Text(loc.earnCoins),
+            ),
+            const SizedBox(height: 8),
+            FilledButton(
+              key: const ValueKey('practice-game'),
+              onPressed: () => _choose(0),
+              child: Text(loc.practice),
+            ),
+          ] else
+            Wrap(
+              spacing: 12,
+              runSpacing: 16,
+              alignment: WrapAlignment.center,
               children: [
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: IconButton(
-                    key: const ValueKey('close-wager'),
-                    tooltip: MaterialLocalizations.of(
-                      context,
-                    ).closeButtonTooltip,
-                    onPressed: () => _choose(null),
-                    icon: const Icon(Icons.close_rounded),
-                  ),
-                ),
-                Image.asset(
-                  'assets/coins/single_coin.png',
-                  width: 56,
-                  height: 56,
-                  excludeFromSemantics: true,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  loc.wager,
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.headlineSmall,
-                ),
-                const SizedBox(height: 20),
-                if (widget.balance < 10) ...[
-                  Text(
-                    loc.notEnoughCoins,
-                    textAlign: TextAlign.center,
-                    style: theme.textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 16),
-                  OutlinedButton(
-                    key: const ValueKey('earn-coins'),
-                    onPressed: () => showDialog<void>(
-                      context: context,
-                      builder: (context) => Dialog(
-                        child: Padding(
-                          padding: const EdgeInsets.all(24),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(loc.comingSoon),
-                              const SizedBox(height: 12),
-                              IconButton(
-                                key: const ValueKey('close-coming-soon'),
-                                tooltip: MaterialLocalizations.of(
-                                  context,
-                                ).closeButtonTooltip,
-                                onPressed: () => Navigator.pop(context),
-                                icon: const Icon(Icons.close_rounded),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    child: Text(loc.earnCoins),
-                  ),
-                  const SizedBox(height: 8),
-                  FilledButton(
-                    key: const ValueKey('practice-game'),
-                    onPressed: () => _choose(0),
-                    child: Text(loc.practice),
-                  ),
-                ] else
-                  Wrap(
-                    spacing: 10,
-                    runSpacing: 8,
-                    alignment: WrapAlignment.center,
-                    children: [
-                      for (final stake in CoinEconomy.stakes.skip(1))
-                        StakeCoinOption(
-                          key: ValueKey('stake-$stake'),
-                          stake: stake,
-                          width: optionWidth,
-                          selected: false,
-                          enabled: stake <= widget.balance,
-                          onSelected: () => _choose(stake),
-                        ),
-                    ],
+                for (final stake in CoinEconomy.stakes.skip(1))
+                  StakeCoinOption(
+                    key: ValueKey('stake-$stake'),
+                    stake: stake,
+                    width: optionWidth,
+                    selected: false,
+                    enabled: stake <= widget.balance,
+                    onSelected: () => _choose(stake),
                   ),
               ],
             ),
-          ),
-        ),
+        ],
       ),
     );
   }
@@ -174,6 +139,12 @@ class StakeCoinOption extends StatelessWidget {
             child: Opacity(
               opacity: enabled ? 1 : .32,
               child: InkResponse(
+                highlightColor: GameModalStyle(
+                  context,
+                ).accent.withValues(alpha: .12),
+                splashColor: GameModalStyle(
+                  context,
+                ).accent.withValues(alpha: .16),
                 onTap: enabled ? onSelected : null,
                 enableFeedback: false,
                 customBorder: const CircleBorder(),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tien_len/widgets/game_dialog.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tien_len/l10n/app_localizations.dart';
@@ -33,7 +34,7 @@ void main() {
       for (final stake in [10, 25, 50, 100]) {
         final result = open(stake);
         await tester.pumpAndSettle();
-        expect(find.text('Wager'), findsOneWidget);
+        expect(find.text('Choose Your Wager'), findsOneWidget);
         for (final removed in [
           'Play For',
           'Free Play',
@@ -75,6 +76,7 @@ void main() {
         await tester.tap(find.byKey(const ValueKey('earn-coins')));
         await tester.pumpAndSettle();
         expect(find.text('Coming soon'), findsOneWidget);
+        expect(find.byType(GameDialog), findsNWidgets(2));
         await tester.tap(find.byKey(const ValueKey('close-coming-soon')));
         await tester.pumpAndSettle();
         await tester.tap(find.byKey(const ValueKey('practice-game')));
