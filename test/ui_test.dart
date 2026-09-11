@@ -87,6 +87,7 @@ void main() {
   ) async {
     await tester.pumpWidget(const TienLenApp());
     await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const ValueKey('new-game-button')));
     await tester.tap(find.byKey(const ValueKey('new-game-button')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('start-staked-game')));
@@ -229,7 +230,7 @@ void main() {
     expect(
       tester.widgetList<PlayingCardWidget>(find.byType(PlayingCardWidget)),
       everyElement(
-        isA<PlayingCardWidget>().having((widget) => widget.width, 'width', 72),
+        isA<PlayingCardWidget>().having((widget) => widget.width, 'width', 112),
       ),
     );
   });
@@ -314,6 +315,7 @@ void main() {
   ) async {
     await tester.pumpWidget(const TienLenApp());
     await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Settings'));
     await tester.tap(find.text('Settings'));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('language-vi')));
@@ -334,6 +336,7 @@ void main() {
   ) async {
     await tester.pumpWidget(const TienLenApp());
     await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Settings'));
     await tester.tap(find.text('Settings'));
     await tester.pumpAndSettle();
 

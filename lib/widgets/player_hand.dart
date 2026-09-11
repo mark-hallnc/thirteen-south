@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../models/playing_card.dart';
 import 'playing_card_widget.dart';
+import 'game_layout_sizes.dart';
 
 class PlayerHand extends StatefulWidget {
   const PlayerHand({
@@ -46,14 +47,14 @@ class _PlayerHandState extends State<PlayerHand> {
     final selectedCards = widget.selectedCards;
     return LayoutBuilder(
       builder: (context, constraints) {
-        final cardWidth = constraints.maxWidth < 350 ? 50.0 : 56.0;
+        final cardWidth = GameLayoutSizes(context).humanCard;
         final cardHeight = cardWidth * 1.42;
         final count = cards.length;
-        final naturalStep = cardWidth * .64;
+        final naturalStep = cardWidth * .9;
         final fitStep = count <= 1
             ? 0.0
             : (constraints.maxWidth - cardWidth) / (count - 1);
-        final step = math.min(naturalStep, math.max(16, fitStep));
+        final step = math.min(naturalStep, math.max(0.0, fitStep));
         final handWidth = count <= 1
             ? cardWidth
             : cardWidth + step * (count - 1);
@@ -96,7 +97,7 @@ class _PlayerHandState extends State<PlayerHand> {
                     onHorizontalDragUpdate: widget.onReorder == null
                         ? null
                         : (details) {
-                            if (_dragged != card) return;
+                            if (_dragged != card || step <= 0) return;
                             setState(() {
                               _dragLeft =
                                   (_dragLeft +

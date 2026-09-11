@@ -115,6 +115,9 @@ void main() {
       await service.save(SavedGame.capture(engine, order));
       await tester.pumpWidget(const TienLenApp());
       await tester.pumpAndSettle();
+      await tester.ensureVisible(
+        find.byKey(const ValueKey('continue-game-button')),
+      );
       await tester.tap(find.byKey(const ValueKey('continue-game-button')));
       await tester.pumpAndSettle();
       final screen = tester.widget<GameScreen>(find.byType(GameScreen));
@@ -134,6 +137,9 @@ void main() {
         findsOneWidget,
       );
       expect(service.load()!.engine.gameId, engine.gameId);
+      await tester.ensureVisible(
+        find.byKey(const ValueKey('continue-game-button')),
+      );
       await tester.tap(find.byKey(const ValueKey('continue-game-button')));
       await tester.pumpAndSettle();
       hand = tester.widget<PlayerHand>(find.byType(PlayerHand));
@@ -160,12 +166,14 @@ void main() {
     await service.save(SavedGame.capture(engine, engine.players.first.hand));
     await tester.pumpWidget(const TienLenApp());
     await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const ValueKey('new-game-button')));
     await tester.tap(find.byKey(const ValueKey('new-game-button')));
     await tester.pumpAndSettle();
     expect(find.text('Your saved game will be replaced.'), findsOneWidget);
     await tester.tap(find.text('Cancel'));
     await tester.pumpAndSettle();
     expect(service.load()!.engine.gameId, engine.gameId);
+    await tester.ensureVisible(find.byKey(const ValueKey('new-game-button')));
     await tester.tap(find.byKey(const ValueKey('new-game-button')));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Start New Game'));
@@ -194,6 +202,9 @@ void main() {
     await service.save(SavedGame.capture(engine, engine.players.first.hand));
     await tester.pumpWidget(const TienLenApp());
     await tester.pumpAndSettle();
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('continue-game-button')),
+    );
     await tester.tap(find.byKey(const ValueKey('continue-game-button')));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 350));

@@ -90,116 +90,174 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
-    return Scaffold(
-      appBar: AppBar(toolbarHeight: 0, bottom: const WalletStatusRow()),
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(28),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 420),
-              child: Column(
-                children: [
-                  Container(
-                    key: const ValueKey('home-header-panel'),
-                    width: double.infinity,
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(28),
-                      gradient: const RadialGradient(
-                        center: Alignment(0, -.45),
-                        radius: 1.1,
-                        colors: [Color(0xFF2A5B4B), Color(0xFF143B30)],
-                      ),
-                      border: Border.all(color: const Color(0xFF426658)),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Color(0x18103329),
-                          blurRadius: 20,
-                          offset: Offset(0, 8),
-                        ),
-                      ],
+    final size = MediaQuery.sizeOf(context);
+    final tablet = size.shortestSide >= 600;
+    final large = size.shortestSide >= 900;
+    final side = tablet ? 40.0 : 24.0;
+    final heroWidth = (size.width - side * 2)
+        .clamp(
+          0.0,
+          large
+              ? 600.0
+              : tablet
+              ? 480.0
+              : 360.0,
+        )
+        .toDouble();
+    final colors = ColorScheme.fromSeed(
+      seedColor: const Color(0xFF315D50),
+      brightness: Brightness.dark,
+    );
+    final buttonHeight = tablet ? 68.0 : 56.0;
+    final primaryStyle = FilledButton.styleFrom(
+      minimumSize: Size(double.infinity, buttonHeight),
+      textStyle: TextStyle(
+        fontSize: tablet ? 22 : 18,
+        fontWeight: FontWeight.w700,
+      ),
+    );
+    final secondaryStyle = OutlinedButton.styleFrom(
+      minimumSize: Size(0, buttonHeight),
+      foregroundColor: const Color(0xFFE3EEE7),
+      side: const BorderSide(color: Color(0xFF577B69)),
+      textStyle: TextStyle(fontSize: tablet ? 20 : 16),
+    );
+    return Theme(
+      data: Theme.of(context).copyWith(colorScheme: colors),
+      child: Scaffold(
+        backgroundColor: const Color(0xFF081C16),
+        extendBodyBehindAppBar: true,
+        appBar: AppBar(
+          toolbarHeight: 0,
+          backgroundColor: Colors.transparent,
+          surfaceTintColor: Colors.transparent,
+          bottom: const WalletStatusRow(),
+        ),
+        body: Container(
+          width: double.infinity,
+          height: double.infinity,
+          decoration: const BoxDecoration(
+            gradient: RadialGradient(
+              center: Alignment(0, -.4),
+              radius: 1.05,
+              colors: [Color(0xFF214E3D), Color(0xFF081C16)],
+            ),
+          ),
+          child: SafeArea(
+            child: LayoutBuilder(
+              builder: (context, constraints) => SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      side,
+                      64,
+                      side,
+                      tablet ? 48 : 28,
                     ),
                     child: Column(
-                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const HomeHeroGraphic(),
-                        const SizedBox(height: 12),
-                        Text(
-                          loc.appTitle,
-                          textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.displaySmall
-                              ?.copyWith(
-                                color: const Color(0xFFF6F4EA),
-                                fontWeight: FontWeight.w700,
-                                height: 1.12,
-                                letterSpacing: -.6,
+                        SizedBox(
+                          width: heroWidth,
+                          height: heroWidth * 168 / 260,
+                          child: const FittedBox(child: HomeHeroGraphic()),
+                        ),
+                        SizedBox(height: tablet ? 26 : 18),
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 1100),
+                          child: Text(
+                            loc.appTitle,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: const Color(0xFFF6F4EA),
+                              fontSize: large
+                                  ? 56
+                                  : tablet
+                                  ? 46
+                                  : 38,
+                              fontWeight: FontWeight.w800,
+                              height: 1.12,
+                              letterSpacing: -.7,
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: tablet ? 40 : 28),
+                        ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxWidth: large ? 640 : 600,
+                          ),
+                          child: Column(
+                            children: [
+                              if (_hasSave) ...[
+                                FilledButton.icon(
+                                  key: const ValueKey('continue-game-button'),
+                                  onPressed: () => _openGame(resume: true),
+                                  style: primaryStyle,
+                                  icon: const Icon(Icons.play_arrow_rounded),
+                                  label: Text(loc.continueGame),
+                                ),
+                                const SizedBox(height: 14),
+                              ],
+                              FilledButton.icon(
+                                key: const ValueKey('new-game-button'),
+                                onPressed: _openGame,
+                                style: _hasSave
+                                    ? primaryStyle.copyWith(
+                                        backgroundColor: WidgetStatePropertyAll(
+                                          colors.secondaryContainer,
+                                        ),
+                                        foregroundColor: WidgetStatePropertyAll(
+                                          colors.onSecondaryContainer,
+                                        ),
+                                      )
+                                    : primaryStyle,
+                                icon: const Icon(Icons.play_arrow_rounded),
+                                label: Text(loc.newGame),
                               ),
+                              const SizedBox(height: 16),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: OutlinedButton.icon(
+                                      onPressed: () =>
+                                          Navigator.of(context).push(
+                                            MaterialPageRoute<void>(
+                                              builder: (_) =>
+                                                  const RulesScreen(),
+                                            ),
+                                          ),
+                                      style: secondaryStyle,
+                                      icon: const Icon(
+                                        Icons.menu_book_outlined,
+                                      ),
+                                      label: Text(loc.rules),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: OutlinedButton.icon(
+                                      onPressed: () =>
+                                          Navigator.of(context).push(
+                                            MaterialPageRoute<void>(
+                                              builder: (_) =>
+                                                  const SettingsScreen(),
+                                            ),
+                                          ),
+                                      style: secondaryStyle,
+                                      icon: const Icon(Icons.tune_rounded),
+                                      label: Text(loc.settings),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 24),
-                  if (_hasSave) ...[
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton.icon(
-                        key: const ValueKey('continue-game-button'),
-                        onPressed: () => _openGame(resume: true),
-                        icon: const Icon(Icons.play_arrow_rounded),
-                        label: Text(loc.continueGame),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                  ],
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton.icon(
-                      key: const ValueKey('new-game-button'),
-                      onPressed: _openGame,
-                      style: _hasSave
-                          ? FilledButton.styleFrom(
-                              backgroundColor: Theme.of(
-                                context,
-                              ).colorScheme.secondaryContainer,
-                              foregroundColor: Theme.of(
-                                context,
-                              ).colorScheme.onSecondaryContainer,
-                            )
-                          : null,
-                      icon: const Icon(Icons.play_arrow_rounded),
-                      label: Text(loc.newGame),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () => Navigator.of(context).push(
-                            MaterialPageRoute<void>(
-                              builder: (_) => const RulesScreen(),
-                            ),
-                          ),
-                          icon: const Icon(Icons.menu_book_outlined),
-                          label: Text(loc.rules),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () => Navigator.of(context).push(
-                            MaterialPageRoute<void>(
-                              builder: (_) => const SettingsScreen(),
-                            ),
-                          ),
-                          icon: const Icon(Icons.tune_rounded),
-                          label: Text(loc.settings),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                ),
               ),
             ),
           ),

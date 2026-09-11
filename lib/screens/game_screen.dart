@@ -18,6 +18,7 @@ import '../widgets/stake_selector.dart';
 import '../widgets/wallet_pill.dart';
 import '../widgets/game_table_widgets.dart';
 import '../widgets/player_hand.dart';
+import '../widgets/game_layout_sizes.dart';
 import 'settings_screen.dart';
 
 class GameScreen extends StatefulWidget {
@@ -363,6 +364,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     final state = _engine.state;
     final human = _engine.players.first;
     final humanTurn = state.isActive && state.currentPlayer == human;
+    final sizes = GameLayoutSizes(context);
 
     return PopScope<void>(
       canPop: !state.isActive,
@@ -427,6 +429,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                                   ),
                             key: const ValueKey('turn-label'),
                             style: TextStyle(
+                              fontSize: sizes.tablet ? 18 : null,
                               fontWeight: FontWeight.w700,
                               color: humanTurn
                                   ? Theme.of(
@@ -443,6 +446,12 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                           children: [
                             Expanded(
                               child: OutlinedButton(
+                                style: OutlinedButton.styleFrom(
+                                  minimumSize: Size(0, sizes.controlHeight),
+                                  textStyle: TextStyle(
+                                    fontSize: sizes.tablet ? 18 : 14,
+                                  ),
+                                ),
                                 key: const ValueKey('pass-button'),
                                 onPressed:
                                     humanTurn && state.currentTableMove != null
@@ -454,6 +463,12 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                             const SizedBox(width: 8),
                             Expanded(
                               child: FilledButton(
+                                style: FilledButton.styleFrom(
+                                  minimumSize: Size(0, sizes.controlHeight),
+                                  textStyle: TextStyle(
+                                    fontSize: sizes.tablet ? 18 : 14,
+                                  ),
+                                ),
                                 key: const ValueKey('play-button'),
                                 onPressed: humanTurn && _selected.isNotEmpty
                                     ? _play
@@ -510,6 +525,8 @@ class _TableSurface extends StatelessWidget {
     final loc = AppLocalizations.of(context)!;
     final state = engine.state;
     final opponents = engine.players.skip(1).toList();
+    final sizes = GameLayoutSizes(context);
+    final opponentScale = sizes.opponentScale;
 
     OpponentPanel opponent(Player player, OpponentPosition position) {
       return OpponentPanel(
@@ -563,7 +580,7 @@ class _TableSurface extends StatelessWidget {
             left: 12,
             right: 12,
             child: SizedBox(
-              height: 145,
+              height: 145 * opponentScale,
               child: opponent(opponents[1], OpponentPosition.top),
             ),
           ),
@@ -572,16 +589,20 @@ class _TableSurface extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.only(left: 8),
               child: SizedBox(
-                width: 80,
-                height: 225,
+                width: 80 * opponentScale,
+                height: 225 * opponentScale,
                 child: opponent(opponents[0], OpponentPosition.left),
               ),
             ),
           ),
           Align(
-            alignment: Alignment.center,
-            child: FractionallySizedBox(
-              widthFactor: .60,
+            alignment: sizes.tablet
+                ? const Alignment(0, .3)
+                : const Alignment(0, .35),
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: 80 * opponentScale + 16,
+              ),
               child: TableMoveArea(
                 cards: state.currentTableMove?.cards ?? const <PlayingCard>[],
                 emptyLabel: loc.leadAPlay,
@@ -596,8 +617,8 @@ class _TableSurface extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.only(right: 8),
               child: SizedBox(
-                width: 80,
-                height: 225,
+                width: 80 * opponentScale,
+                height: 225 * opponentScale,
                 child: opponent(opponents[2], OpponentPosition.right),
               ),
             ),

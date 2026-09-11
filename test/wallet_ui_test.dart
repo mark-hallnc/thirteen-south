@@ -25,6 +25,7 @@ void main() {
         findsOneWidget,
       );
       for (final screen in ['Rules', 'Settings']) {
+        await tester.ensureVisible(find.text(screen));
         await tester.tap(find.text(screen));
         await tester.pumpAndSettle();
         expect(

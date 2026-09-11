@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../models/playing_card.dart';
 import 'playing_card_widget.dart';
+import 'game_layout_sizes.dart';
 
 enum OpponentPosition { top, left, right }
 
@@ -22,7 +23,8 @@ class OpponentHand extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isTop = position == OpponentPosition.top;
-    final cardWidth = isTop ? 52.0 : 50.0;
+    final scale = GameLayoutSizes(context).opponentScale;
+    final cardWidth = (isTop ? 52.0 : 50.0) * scale;
     final cardHeight = cardWidth * 1.42;
     final laidOutWidth = isTop ? cardWidth : cardHeight;
     final laidOutHeight = isTop ? cardHeight : cardWidth;
@@ -38,7 +40,7 @@ class OpponentHand extends StatelessWidget {
             : math.max(
                 3.5,
                 math.min(
-                  isTop ? 20.0 : 10.0,
+                  (isTop ? 20.0 : 10.0) * scale,
                   (availableExtent - cardExtent) / (cardCount - 1),
                 ),
               );
@@ -113,7 +115,7 @@ class OpponentPanel extends StatelessWidget {
     final isTop = position == OpponentPosition.top;
     Widget label() => AnimatedContainer(
       duration: const Duration(milliseconds: 180),
-      width: isTop ? 116 : 72,
+      width: (isTop ? 116 : 72) * GameLayoutSizes(context).opponentScale,
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
       decoration: BoxDecoration(
         color: const Color(0xFF173E34).withValues(alpha: .94),
@@ -131,9 +133,9 @@ class OpponentPanel extends StatelessWidget {
             child: Text(
               name,
               maxLines: 1,
-              style: const TextStyle(
+              style: TextStyle(
                 color: Colors.white,
-                fontSize: 11,
+                fontSize: 11 * GameLayoutSizes(context).opponentScale,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -144,7 +146,10 @@ class OpponentPanel extends StatelessWidget {
               '$cardCount $cardsLabel',
               key: ValueKey('opponent-$opponentId-card-count'),
               maxLines: 1,
-              style: const TextStyle(color: Color(0xFFC5D7CE), fontSize: 10.5),
+              style: TextStyle(
+                color: const Color(0xFFC5D7CE),
+                fontSize: 10.5 * GameLayoutSizes(context).opponentScale,
+              ),
             ),
           ),
           if (isPassed)
@@ -153,9 +158,9 @@ class OpponentPanel extends StatelessWidget {
               child: Text(
                 passedLabel,
                 maxLines: 1,
-                style: const TextStyle(
+                style: TextStyle(
                   color: Color(0xFFFFC6C1),
-                  fontSize: 10.5,
+                  fontSize: 10.5 * GameLayoutSizes(context).opponentScale,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -170,7 +175,7 @@ class OpponentPanel extends StatelessWidget {
             children: [
               SizedBox(
                 width: double.infinity,
-                height: 74,
+                height: 74 * GameLayoutSizes(context).opponentScale,
                 child: OpponentHand(
                   opponentId: opponentId,
                   cardCount: cardCount,
@@ -185,8 +190,8 @@ class OpponentPanel extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               SizedBox(
-                width: 76,
-                height: 156,
+                width: 76 * GameLayoutSizes(context).opponentScale,
+                height: 156 * GameLayoutSizes(context).opponentScale,
                 child: OpponentHand(
                   opponentId: opponentId,
                   cardCount: cardCount,
@@ -194,7 +199,10 @@ class OpponentPanel extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 2),
-              SizedBox(height: 64, child: label()),
+              SizedBox(
+                height: 64 * GameLayoutSizes(context).opponentScale,
+                child: label(),
+              ),
             ],
           );
     return Semantics(
@@ -219,6 +227,7 @@ class TableMoveArea extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final desiredWidth = GameLayoutSizes(context).trickCard;
     return LayoutBuilder(
       builder: (context, outerConstraints) => AnimatedSwitcher(
         duration: const Duration(milliseconds: 240),
@@ -233,7 +242,7 @@ class TableMoveArea extends StatelessWidget {
         child: SizedBox(
           key: ValueKey(Object.hashAll(cards)),
           width: outerConstraints.maxWidth,
-          height: 145,
+          height: desiredWidth * 1.42 + 40,
           child: cards.isEmpty
               ? Center(
                   child: Text(
@@ -250,18 +259,22 @@ class TableMoveArea extends StatelessWidget {
                   children: [
                     SizedBox(
                       width: outerConstraints.maxWidth,
-                      height: 112,
+                      height: desiredWidth * 1.42 + 6,
                       child: LayoutBuilder(
                         builder: (context, constraints) {
-                          final cardWidth = constraints.maxWidth < 200
-                              ? 72.0
-                              : 76.0;
+                          final cardWidth = math.min(
+                            desiredWidth,
+                            constraints.maxWidth,
+                          );
                           final step = cards.length <= 1
                               ? 0.0
                               : math.min(
                                   cardWidth * .62,
-                                  (constraints.maxWidth - cardWidth) /
-                                      (cards.length - 1),
+                                  math.max(
+                                    0.0,
+                                    (constraints.maxWidth - cardWidth) /
+                                        (cards.length - 1),
+                                  ),
                                 );
                           final width = cardWidth + step * (cards.length - 1);
                           final start = (constraints.maxWidth - width) / 2;

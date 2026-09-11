@@ -126,6 +126,7 @@ void main() {
     await tester.pumpWidget(const TienLenApp());
     await tester.pumpAndSettle();
     expect(tester.widget<WalletPill>(find.byType(WalletPill)).balance, 0);
+    await tester.ensureVisible(find.byKey(const ValueKey('new-game-button')));
     await tester.tap(find.byKey(const ValueKey('new-game-button')));
     await tester.pumpAndSettle();
     expect(
@@ -201,6 +202,7 @@ void main() {
     await tester.pumpWidget(const TienLenApp());
     await tester.pumpAndSettle();
     expect(tester.widget<WalletPill>(find.byType(WalletPill)).balance, 500);
+    await tester.ensureVisible(find.byKey(const ValueKey('new-game-button')));
     await tester.tap(find.byKey(const ValueKey('new-game-button')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('stake-25')));
@@ -222,6 +224,9 @@ void main() {
       );
       await tester.pumpWidget(const TienLenApp());
       await tester.pumpAndSettle();
+      await tester.ensureVisible(
+        find.byKey(const ValueKey('continue-game-button')),
+      );
       await tester.tap(find.byKey(const ValueKey('continue-game-button')));
       await tester.pumpAndSettle();
       expect(find.byType(StakeSelector), findsNothing);

@@ -195,6 +195,7 @@ void main() {
     SharedPreferences.setMockInitialValues({'sounds_enabled': false});
     await tester.pumpWidget(const TienLenApp());
     await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Settings'));
     await tester.tap(find.text('Settings'));
     await tester.pumpAndSettle();
     final toggle = find.byKey(const ValueKey('sounds-enabled'));
