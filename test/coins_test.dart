@@ -143,7 +143,7 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('start-staked-game')));
     await tester.pumpAndSettle();
     expect(find.byType(GameScreen), findsOneWidget);
-    expect(find.text('Free Play'), findsOneWidget);
+    expect(find.text('Free Play'), findsNothing);
     expect(service.loadCoins().balance, 0);
     await tester.pumpWidget(const SizedBox());
     await tester.pumpAndSettle();
@@ -225,7 +225,8 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('continue-game-button')));
       await tester.pumpAndSettle();
       expect(find.byType(StakeSelector), findsNothing);
-      expect(find.text('Stake: 25'), findsOneWidget);
+      expect(find.text('Stake: 25'), findsNothing);
+      expect(tester.widget<WalletPill>(find.byType(WalletPill)).balance, 475);
       expect(service.loadCoins().balance, 475);
       final screen = tester.widget<GameScreen>(find.byType(GameScreen));
       expect(screen.stake, 25);

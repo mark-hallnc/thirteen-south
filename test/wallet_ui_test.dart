@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tien_len/main.dart';
 import 'package:tien_len/widgets/wallet_pill.dart';
-import 'package:tien_len/widgets/stake_pill.dart';
 import 'package:tien_len/widgets/stake_selector.dart';
 
 import 'ui_test.dart' show humanLeadEngine, localizedGame;
@@ -51,19 +50,17 @@ void main() {
     },
   );
 
-  testWidgets('Game top status contains a wallet and separate stake pill', (
+  testWidgets('Game top status contains a wallet without stake display', (
     tester,
   ) async {
     await tester.pumpWidget(localizedGame(humanLeadEngine()));
     await tester.pumpAndSettle();
     expect(find.byType(WalletPill), findsOneWidget);
-    expect(find.byType(StakePill), findsOneWidget);
+    expect(find.byKey(const ValueKey('game-stake')), findsNothing);
+    expect(find.text('Free Play'), findsNothing);
     expect(
-      find.descendant(
-        of: find.byType(StakePill),
-        matching: find.text('Free Play'),
-      ),
-      findsOneWidget,
+      tester.widget<WalletStatusRow>(find.byType(WalletStatusRow)).trailing,
+      isNull,
     );
     await tester.pumpWidget(const SizedBox());
     await tester.pumpAndSettle();
