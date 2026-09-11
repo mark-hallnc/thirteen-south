@@ -7,7 +7,6 @@ import '../models/coin_statistics.dart';
 import '../preferences_scope.dart';
 import '../services/preferences_service.dart';
 import '../services/saved_game_service.dart';
-import 'wallet_pill.dart';
 
 class StakeSelector extends StatefulWidget {
   const StakeSelector({super.key, required this.balance});
@@ -28,10 +27,7 @@ class _StakeSelectorState extends State<StakeSelector> {
       width: width,
       child: ChoiceChip(
         key: ValueKey('stake-$stake'),
-        label: Center(
-          heightFactor: 1,
-          child: Text(stake == 0 ? loc.free : '$stake'),
-        ),
+        label: Center(heightFactor: 1, child: Text(loc.freePlay)),
         labelPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
         showCheckmark: false,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
@@ -83,20 +79,10 @@ class _StakeSelectorState extends State<StakeSelector> {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  loc.gameStake,
+                  loc.playFor,
                   textAlign: TextAlign.center,
                   style: theme.textTheme.headlineSmall,
                 ),
-                const SizedBox(height: 6),
-                Text(
-                  loc.chooseYourStake,
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Center(child: WalletPill(balance: widget.balance)),
                 const SizedBox(height: 20),
                 option(0, double.infinity),
                 const SizedBox(height: 8),
@@ -106,7 +92,14 @@ class _StakeSelectorState extends State<StakeSelector> {
                   alignment: WrapAlignment.center,
                   children: [
                     for (final stake in CoinEconomy.stakes.skip(1))
-                      option(stake, optionWidth),
+                      StakeCoinOption(
+                        key: ValueKey('stake-$stake'),
+                        stake: stake,
+                        width: optionWidth,
+                        selected: _stake == stake,
+                        enabled: stake <= widget.balance,
+                        onSelected: () => setState(() => _stake = stake),
+                      ),
                   ],
                 ),
                 const SizedBox(height: 24),
@@ -129,6 +122,102 @@ class _StakeSelectorState extends State<StakeSelector> {
                   ],
                 ),
               ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class StakeCoinOption extends StatelessWidget {
+  const StakeCoinOption({
+    super.key,
+    required this.stake,
+    required this.width,
+    required this.selected,
+    required this.enabled,
+    required this.onSelected,
+  });
+
+  final int stake;
+  final double width;
+  final bool selected;
+  final bool enabled;
+  final VoidCallback onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final diameter = (width - 12).clamp(48.0, 76.0).toDouble();
+    return Semantics(
+      button: true,
+      selected: selected,
+      enabled: enabled,
+      label: AppLocalizations.of(context)!.coinAmount(stake),
+      child: SizedBox(
+        width: width,
+        height: 88,
+        child: Center(
+          child: AnimatedScale(
+            scale: selected ? 1.06 : 1,
+            duration: const Duration(milliseconds: 140),
+            child: Opacity(
+              opacity: enabled ? 1 : .32,
+              child: InkResponse(
+                onTap: enabled ? onSelected : null,
+                enableFeedback: false,
+                customBorder: const CircleBorder(),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 140),
+                  width: diameter,
+                  height: diameter,
+                  padding: const EdgeInsets.all(5),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: selected ? colors.primary : colors.outlineVariant,
+                      width: selected ? 2.5 : 1,
+                    ),
+                    boxShadow: [
+                      if (selected)
+                        BoxShadow(
+                          color: colors.primary.withValues(alpha: .16),
+                          blurRadius: 10,
+                        ),
+                    ],
+                  ),
+                  child: ExcludeSemantics(
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Positioned.fill(
+                          child: Image.asset('assets/coins/single_coin.png'),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 5,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFBE4A5),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            '$stake',
+                            style: const TextStyle(
+                              color: Color(0xFF382710),
+                              fontSize: 20,
+                              fontWeight: FontWeight.w800,
+                              height: 1.1,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
         ),

@@ -128,11 +128,17 @@ void main() {
     expect(tester.widget<WalletPill>(find.byType(WalletPill)).balance, 0);
     await tester.tap(find.byKey(const ValueKey('new-game-button')));
     await tester.pumpAndSettle();
-    for (final stake in CoinEconomy.stakes) {
-      final chip = tester.widget<ChoiceChip>(
+    expect(
+      tester
+          .widget<ChoiceChip>(find.byKey(const ValueKey('stake-0')))
+          .onSelected,
+      isNotNull,
+    );
+    for (final stake in CoinEconomy.stakes.skip(1)) {
+      final chip = tester.widget<StakeCoinOption>(
         find.byKey(ValueKey('stake-$stake')),
       );
-      expect(chip.onSelected != null, stake == 0);
+      expect(chip.enabled, isFalse);
     }
     await tester.tap(find.byKey(const ValueKey('start-staked-game')));
     await tester.pumpAndSettle();
@@ -141,6 +147,52 @@ void main() {
     expect(service.loadCoins().balance, 0);
     await tester.pumpWidget(const SizedBox());
     await tester.pumpAndSettle();
+  });
+
+  testWidgets('coin results preserve rewards and omit loss summaries', (
+    tester,
+  ) async {
+    for (final stake in [0, 25]) {
+      for (final humanWon in [false, true]) {
+        final engine = humanLeadEngine(winningHand: humanWon);
+        final startingBalance = service.loadCoins().balance;
+        await service.commitStake(engine.gameId, stake);
+        engine.playCards(engine.players.first.id, [
+          engine.players.first.hand.first,
+        ]);
+        if (!humanWon) engine.performAiTurn();
+        expect(engine.state.winner!.isHuman, humanWon);
+        await tester.pumpWidget(const TienLenApp());
+        await tester.pumpAndSettle();
+        tester
+            .state<NavigatorState>(find.byType(Navigator))
+            .push<void>(
+              MaterialPageRoute<void>(
+                builder: (_) => GameScreen(engine: engine, stake: stake),
+              ),
+            );
+        await tester.pumpAndSettle();
+        final result = find.byKey(const ValueKey('coin-result'));
+        if (humanWon) {
+          expect(result, findsOneWidget);
+          expect(
+            tester.widget<Text>(result).data,
+            contains(stake == 0 ? '+10 Coins' : '+75 Coins'),
+          );
+        } else {
+          expect(result, findsNothing);
+          expect(find.textContaining('Balance:'), findsNothing);
+          expect(find.text('-25 Coins'), findsNothing);
+          expect(find.text('No coin change'), findsNothing);
+        }
+        expect(
+          service.loadCoins().balance,
+          startingBalance + CoinEconomy.netChange(stake, humanWon),
+        );
+        await tester.pumpWidget(const SizedBox());
+        await tester.pumpAndSettle();
+      }
+    }
   });
 
   testWidgets('selecting then cancelling a stake does not deduct', (

@@ -9,16 +9,13 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get chooseYourStake => 'Choose your stake';
+  String get playFor => 'Play For';
 
   @override
   String get coins => 'Coins';
 
   @override
   String get balance => 'Balance';
-
-  @override
-  String get gameStake => 'Game Stake';
 
   @override
   String get free => 'Free';

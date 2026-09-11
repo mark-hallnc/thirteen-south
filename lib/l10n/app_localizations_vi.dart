@@ -9,16 +9,13 @@ class AppLocalizationsVi extends AppLocalizations {
   AppLocalizationsVi([String locale = 'vi']) : super(locale);
 
   @override
-  String get chooseYourStake => 'Chọn mức xu tham gia';
+  String get playFor => 'Chơi với mức xu';
 
   @override
   String get coins => 'Xu';
 
   @override
   String get balance => 'Số dư';
-
-  @override
-  String get gameStake => 'Mức xu tham gia';
 
   @override
   String get free => 'Miễn phí';

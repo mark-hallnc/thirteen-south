@@ -348,6 +348,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   }
 
   String? _coinResultText(AppLocalizations loc, bool humanWon) {
+    if (!humanWon) return null;
     final coins = _resultCoins;
     if (coins == null) return null;
     final net = CoinEconomy.netChange(_stake, humanWon);

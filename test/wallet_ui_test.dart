@@ -85,7 +85,10 @@ void main() {
         builder: (_) => const StakeSelector(balance: 25),
       ).then((value) => selected = value);
       await tester.pumpAndSettle();
-      expect(find.text('Choose your stake'), findsOneWidget);
+      expect(find.text('Play For'), findsOneWidget);
+      expect(find.text('Choose your stake'), findsNothing);
+      expect(find.text('Game Stake'), findsNothing);
+      expect(find.text('Free Play'), findsOneWidget);
       expect(find.text('Balance: 25 Coins'), findsNothing);
       final panel = find.byType(StakeSelector);
       expect(tester.takeException(), isNull);
@@ -117,13 +120,13 @@ void main() {
       );
       expect(
         find.descendant(of: panel, matching: find.byType(Image)),
-        findsNWidgets(2),
+        findsNWidgets(5),
       );
-      for (final stake in [0, 10, 25, 50, 100]) {
-        final chip = tester.widget<ChoiceChip>(
+      for (final stake in [10, 25, 50, 100]) {
+        final chip = tester.widget<StakeCoinOption>(
           find.byKey(ValueKey('stake-$stake')),
         );
-        expect(chip.onSelected != null, stake <= 25);
+        expect(chip.enabled, stake <= 25);
       }
       expect(
         tester.getTopLeft(find.byKey(const ValueKey('stake-50'))).dy,
@@ -133,7 +136,15 @@ void main() {
       await tester.pumpAndSettle();
       expect(
         tester
-            .widget<ChoiceChip>(find.byKey(const ValueKey('stake-25')))
+            .widget<StakeCoinOption>(find.byKey(const ValueKey('stake-25')))
+            .selected,
+        isTrue,
+      );
+      await tester.tap(find.byKey(const ValueKey('stake-100')));
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .widget<StakeCoinOption>(find.byKey(const ValueKey('stake-25')))
             .selected,
         isTrue,
       );
@@ -141,6 +152,15 @@ void main() {
       await tester.pumpAndSettle();
       expect(selected, 25);
       expect(tester.takeException(), isNull);
+      showDialog<int>(
+        context: context,
+        builder: (_) => const StakeSelector(balance: 0),
+      ).then((value) => selected = value);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('stake-0')));
+      await tester.tap(find.byKey(const ValueKey('start-staked-game')));
+      await tester.pumpAndSettle();
+      expect(selected, 0);
     },
   );
 }
