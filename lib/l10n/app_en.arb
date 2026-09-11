@@ -1,5 +1,5 @@
 {
-  "playFor": "Play For",
+  "wager": "Wager",
   "coins": "Coins",
   "balance": "Balance",
   "free": "Free",
@@ -94,5 +94,6 @@
   "rulesPassingBody": "After passing, you normally sit out until the table clears. The unbeaten player then leads any valid combination.",
   "rulesChoppingTitle": "Chopping 2s",
   "rulesChoppingBody": "Four of a kind or three consecutive pairs can chop one 2. Four consecutive pairs chop two 2s, and five consecutive pairs chop three 2s. A passed player may still chop when their turn arrives.",
-"sound": "Sound", "soundEffects": "Sound effects", "soundEffectsDescription": "Play sounds during games"
+"sound": "Sound", "soundEffects": "Sound effects", "soundEffectsDescription": "Play sounds during games",
+"notEnoughCoins": "Not enough coins", "earnCoins": "Earn Coins", "practice": "Practice", "comingSoon": "Coming soon"
 }

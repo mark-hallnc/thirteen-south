@@ -116,7 +116,7 @@ void main() {
     },
   );
 
-  testWidgets('zero balance shows on Home and only Free is available', (
+  testWidgets('zero balance stays unchanged and offers Practice', (
     tester,
   ) async {
     await (await SharedPreferences.getInstance()).setString(
@@ -129,19 +129,9 @@ void main() {
     await tester.ensureVisible(find.byKey(const ValueKey('new-game-button')));
     await tester.tap(find.byKey(const ValueKey('new-game-button')));
     await tester.pumpAndSettle();
-    expect(
-      tester
-          .widget<ChoiceChip>(find.byKey(const ValueKey('stake-0')))
-          .onSelected,
-      isNotNull,
-    );
-    for (final stake in CoinEconomy.stakes.skip(1)) {
-      final chip = tester.widget<StakeCoinOption>(
-        find.byKey(ValueKey('stake-$stake')),
-      );
-      expect(chip.enabled, isFalse);
-    }
-    await tester.tap(find.byKey(const ValueKey('start-staked-game')));
+    expect(find.byType(StakeCoinOption), findsNothing);
+    expect(find.text('Not enough coins'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('practice-game')));
     await tester.pumpAndSettle();
     expect(find.byType(GameScreen), findsOneWidget);
     expect(find.text('Free Play'), findsNothing);
@@ -196,19 +186,14 @@ void main() {
     }
   });
 
-  testWidgets('selecting then cancelling a stake does not deduct', (
-    tester,
-  ) async {
+  testWidgets('closing the wager dialog does not deduct', (tester) async {
     await tester.pumpWidget(const TienLenApp());
     await tester.pumpAndSettle();
     expect(tester.widget<WalletPill>(find.byType(WalletPill)).balance, 500);
     await tester.ensureVisible(find.byKey(const ValueKey('new-game-button')));
     await tester.tap(find.byKey(const ValueKey('new-game-button')));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('stake-25')));
-    await tester.pumpAndSettle();
-    expect(service.loadCoins().balance, 500);
-    await tester.tap(find.text('Cancel'));
+    await tester.tap(find.byKey(const ValueKey('close-wager')));
     await tester.pumpAndSettle();
     expect(service.loadCoins().balance, 500);
     expect(find.byType(GameScreen), findsNothing);

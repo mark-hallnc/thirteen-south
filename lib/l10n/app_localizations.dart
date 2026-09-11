@@ -98,11 +98,11 @@ abstract class AppLocalizations {
     Locale('vi'),
   ];
 
-  /// No description provided for @playFor.
+  /// No description provided for @wager.
   ///
   /// In en, this message translates to:
-  /// **'Play For'**
-  String get playFor;
+  /// **'Wager'**
+  String get wager;
 
   /// No description provided for @coins.
   ///
@@ -637,6 +637,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Play sounds during games'**
   String get soundEffectsDescription;
+
+  /// No description provided for @notEnoughCoins.
+  ///
+  /// In en, this message translates to:
+  /// **'Not enough coins'**
+  String get notEnoughCoins;
+
+  /// No description provided for @earnCoins.
+  ///
+  /// In en, this message translates to:
+  /// **'Earn Coins'**
+  String get earnCoins;
+
+  /// No description provided for @practice.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice'**
+  String get practice;
+
+  /// No description provided for @comingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Coming soon'**
+  String get comingSoon;
 }
 
 class _AppLocalizationsDelegate

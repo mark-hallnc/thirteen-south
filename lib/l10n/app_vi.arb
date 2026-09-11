@@ -1,5 +1,5 @@
 {
-  "playFor": "Chơi với mức xu",
+  "wager": "Đặt cược",
   "coins": "Xu",
   "balance": "Số dư",
   "free": "Miễn phí",
@@ -91,5 +91,6 @@
   "rulesPassingBody": "Sau khi bỏ lượt, bạn thường phải chờ đến khi vòng bài kết thúc. Người giữ bài cao nhất sẽ đi đầu.",
   "rulesChoppingTitle": "Chặt 2",
   "rulesChoppingBody": "Tứ quý hoặc ba đôi thông chặt một lá 2. Bốn đôi thông chặt đôi 2, năm đôi thông chặt ba lá 2. Người đã bỏ lượt vẫn có thể chặt khi đến lượt.",
-"sound": "Âm thanh", "soundEffects": "Hiệu ứng âm thanh", "soundEffectsDescription": "Phát âm thanh khi chơi"
+"sound": "Âm thanh", "soundEffects": "Hiệu ứng âm thanh", "soundEffectsDescription": "Phát âm thanh khi chơi",
+"notEnoughCoins": "Không đủ xu", "earnCoins": "Kiếm xu", "practice": "Luyện tập", "comingSoon": "Sắp ra mắt"
 }

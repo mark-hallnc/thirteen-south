@@ -47,6 +47,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   late int _stake;
   late bool _stakeCommitted;
   CoinStatistics? _resultCoins;
+  bool _resultIsPractice = false;
 
   Future<void> _saveGame() async {
     final snapshot = SavedGame.capture(
@@ -57,6 +58,9 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     );
     final winner = snapshot.engine.state.winner;
     if (winner != null) {
+      final coinService = PreferencesService(
+        await SharedPreferences.getInstance(),
+      );
       final preferences = mounted ? PreferencesScope.maybeOf(context) : null;
       final coins = preferences != null
           ? await preferences.settleGame(
@@ -72,7 +76,12 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
               humanWon: winner.isHuman,
             );
       if (mounted && _engine.gameId == snapshot.engine.gameId) {
-        setState(() => _resultCoins = coins);
+        setState(() {
+          _resultCoins = coins;
+          _resultIsPractice = coinService.isPracticeGame(
+            snapshot.engine.gameId,
+          );
+        });
       }
     }
     await (await _saveService).save(snapshot);
@@ -304,6 +313,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       _stake = game.stake;
       _stakeCommitted = game.stakeCommitted;
       _resultCoins = null;
+      _resultIsPractice = false;
       _humanCardOrder = List.of(_engine.players.first.hand);
     });
     unawaited(_saveGame());
@@ -348,7 +358,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   }
 
   String? _coinResultText(AppLocalizations loc, bool humanWon) {
-    if (!humanWon) return null;
+    if (!humanWon || _resultIsPractice) return null;
     final coins = _resultCoins;
     if (coins == null) return null;
     final net = CoinEconomy.netChange(_stake, humanWon);
@@ -408,6 +418,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                                 ),
                                 icon: const Icon(Icons.tune_rounded),
                               ),
+                              const SizedBox(width: 4),
                               IconButton(
                                 color: const Color(0xFFE3EEE7),
                                 tooltip: loc.newGame,
@@ -415,7 +426,11 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                                 icon: const Icon(Icons.refresh_rounded),
                               ),
                               const SizedBox(width: 4),
-                              Flexible(
+                              ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  maxWidth:
+                                      MediaQuery.sizeOf(context).width - 168,
+                                ),
                                 child: FittedBox(
                                   fit: BoxFit.scaleDown,
                                   child: Theme(

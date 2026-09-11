@@ -9,7 +9,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get playFor => 'Play For';
+  String get wager => 'Wager';
 
   @override
   String get coins => 'Coins';
@@ -301,4 +301,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get soundEffectsDescription => 'Play sounds during games';
+
+  @override
+  String get notEnoughCoins => 'Not enough coins';
+
+  @override
+  String get earnCoins => 'Earn Coins';
+
+  @override
+  String get practice => 'Practice';
+
+  @override
+  String get comingSoon => 'Coming soon';
 }

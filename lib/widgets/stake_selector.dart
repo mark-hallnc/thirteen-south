@@ -17,41 +17,19 @@ class StakeSelector extends StatefulWidget {
 }
 
 class _StakeSelectorState extends State<StakeSelector> {
-  int _stake = 0;
+  bool _finished = false;
+
+  void _choose(int? stake) {
+    // Ignore a second tap while the dialog's closing transition is running.
+    if (_finished) return;
+    _finished = true;
+    Navigator.pop(context, stake);
+  }
 
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-    Widget option(int stake, double width) => SizedBox(
-      width: width,
-      child: ChoiceChip(
-        key: ValueKey('stake-$stake'),
-        label: Center(heightFactor: 1, child: Text(loc.freePlay)),
-        labelPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-        showCheckmark: false,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        selectedColor: theme.colorScheme.primaryContainer,
-        side: BorderSide(
-          color: _stake == stake
-              ? theme.colorScheme.primary
-              : theme.colorScheme.outlineVariant,
-          width: _stake == stake ? 2 : 1,
-        ),
-        labelStyle: theme.textTheme.titleSmall?.copyWith(
-          fontWeight: FontWeight.w700,
-          color: stake > widget.balance
-              ? theme.colorScheme.onSurface.withValues(alpha: .38)
-              : _stake == stake
-              ? theme.colorScheme.onPrimaryContainer
-              : theme.colorScheme.onSurface,
-        ),
-        selected: _stake == stake,
-        onSelected: stake == 0 || stake <= widget.balance
-            ? (_) => setState(() => _stake = stake)
-            : null,
-      ),
-    );
     final dialogWidth = (MediaQuery.sizeOf(context).width - 32)
         .clamp(0.0, 380.0)
         .toDouble();
@@ -66,11 +44,22 @@ class _StakeSelectorState extends State<StakeSelector> {
         child: SizedBox(
           width: dialogWidth,
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: IconButton(
+                    key: const ValueKey('close-wager'),
+                    tooltip: MaterialLocalizations.of(
+                      context,
+                    ).closeButtonTooltip,
+                    onPressed: () => _choose(null),
+                    icon: const Icon(Icons.close_rounded),
+                  ),
+                ),
                 Image.asset(
                   'assets/coins/single_coin.png',
                   width: 56,
@@ -79,48 +68,68 @@ class _StakeSelectorState extends State<StakeSelector> {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  loc.playFor,
+                  loc.wager,
                   textAlign: TextAlign.center,
                   style: theme.textTheme.headlineSmall,
                 ),
                 const SizedBox(height: 20),
-                option(0, double.infinity),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 10,
-                  runSpacing: 8,
-                  alignment: WrapAlignment.center,
-                  children: [
-                    for (final stake in CoinEconomy.stakes.skip(1))
-                      StakeCoinOption(
-                        key: ValueKey('stake-$stake'),
-                        stake: stake,
-                        width: optionWidth,
-                        selected: _stake == stake,
-                        enabled: stake <= widget.balance,
-                        onSelected: () => setState(() => _stake = stake),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: Text(loc.cancel, textAlign: TextAlign.center),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: FilledButton(
-                        key: const ValueKey('start-staked-game'),
-                        onPressed: () => Navigator.pop(context, _stake),
-                        child: Text(loc.startGame, textAlign: TextAlign.center),
+                if (widget.balance < 10) ...[
+                  Text(
+                    loc.notEnoughCoins,
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 16),
+                  OutlinedButton(
+                    key: const ValueKey('earn-coins'),
+                    onPressed: () => showDialog<void>(
+                      context: context,
+                      builder: (context) => Dialog(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(loc.comingSoon),
+                              const SizedBox(height: 12),
+                              IconButton(
+                                key: const ValueKey('close-coming-soon'),
+                                tooltip: MaterialLocalizations.of(
+                                  context,
+                                ).closeButtonTooltip,
+                                onPressed: () => Navigator.pop(context),
+                                icon: const Icon(Icons.close_rounded),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
-                  ],
-                ),
+                    child: Text(loc.earnCoins),
+                  ),
+                  const SizedBox(height: 8),
+                  FilledButton(
+                    key: const ValueKey('practice-game'),
+                    onPressed: () => _choose(0),
+                    child: Text(loc.practice),
+                  ),
+                ] else
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 8,
+                    alignment: WrapAlignment.center,
+                    children: [
+                      for (final stake in CoinEconomy.stakes.skip(1))
+                        StakeCoinOption(
+                          key: ValueKey('stake-$stake'),
+                          stake: stake,
+                          width: optionWidth,
+                          selected: false,
+                          enabled: stake <= widget.balance,
+                          onSelected: () => _choose(stake),
+                        ),
+                    ],
+                  ),
               ],
             ),
           ),
@@ -238,9 +247,10 @@ Future<SavedGame?> selectNewGame(BuildContext context) async {
   if (stake == null || !context.mounted) return null;
   final engine = GameEngine()..startNewGame();
   if (preferences != null) engine.difficulty = preferences.difficulty;
-  final committed =
-      await (preferences?.commitStake(engine.gameId, stake) ??
-          service.commitStake(engine.gameId, stake));
+  final committed = await (stake == 0
+      ? service.commitStake(engine.gameId, 0, practice: true)
+      : preferences?.commitStake(engine.gameId, stake) ??
+            service.commitStake(engine.gameId, stake));
   if (!committed) return null;
   final saved = SavedGame.capture(
     engine,

@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tien_len/main.dart';
 import 'package:tien_len/widgets/wallet_pill.dart';
-import 'package:tien_len/widgets/stake_selector.dart';
 
 import 'ui_test.dart' show humanLeadEngine, localizedGame;
 
@@ -64,99 +63,4 @@ void main() {
     await tester.pumpWidget(const SizedBox());
     await tester.pumpAndSettle();
   });
-
-  testWidgets(
-    'stake panel has a coin header, balanced options and unchanged selection',
-    (tester) async {
-      tester.view.physicalSize = const Size(320, 640);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
-      await tester.pumpWidget(const TienLenApp());
-      await tester.pumpAndSettle();
-      int? selected;
-      final context = tester.element(find.byType(WalletPill));
-      showDialog<int>(
-        context: context,
-        builder: (_) => const StakeSelector(balance: 25),
-      ).then((value) => selected = value);
-      await tester.pumpAndSettle();
-      expect(find.text('Play For'), findsOneWidget);
-      expect(find.text('Choose your stake'), findsNothing);
-      expect(find.text('Game Stake'), findsNothing);
-      expect(find.text('Free Play'), findsOneWidget);
-      expect(find.text('Balance: 25 Coins'), findsNothing);
-      final panel = find.byType(StakeSelector);
-      expect(tester.takeException(), isNull);
-      expect(
-        find.descendant(of: panel, matching: find.byType(Dialog)),
-        findsOneWidget,
-      );
-      expect(
-        find.descendant(of: panel, matching: find.byType(AlertDialog)),
-        findsNothing,
-      );
-      expect(
-        find.descendant(of: panel, matching: find.byType(LayoutBuilder)),
-        findsNothing,
-      );
-      expect(
-        find.descendant(of: panel, matching: find.byType(IntrinsicWidth)),
-        findsNothing,
-      );
-      expect(
-        find.descendant(of: panel, matching: find.byType(IntrinsicHeight)),
-        findsNothing,
-      );
-      expect(
-        tester
-            .widget<ChoiceChip>(find.byKey(const ValueKey('stake-0')))
-            .selected,
-        isTrue,
-      );
-      expect(
-        find.descendant(of: panel, matching: find.byType(Image)),
-        findsNWidgets(5),
-      );
-      for (final stake in [10, 25, 50, 100]) {
-        final chip = tester.widget<StakeCoinOption>(
-          find.byKey(ValueKey('stake-$stake')),
-        );
-        expect(chip.enabled, stake <= 25);
-      }
-      expect(
-        tester.getTopLeft(find.byKey(const ValueKey('stake-50'))).dy,
-        tester.getTopLeft(find.byKey(const ValueKey('stake-100'))).dy,
-      );
-      await tester.tap(find.byKey(const ValueKey('stake-25')));
-      await tester.pumpAndSettle();
-      expect(
-        tester
-            .widget<StakeCoinOption>(find.byKey(const ValueKey('stake-25')))
-            .selected,
-        isTrue,
-      );
-      await tester.tap(find.byKey(const ValueKey('stake-100')));
-      await tester.pumpAndSettle();
-      expect(
-        tester
-            .widget<StakeCoinOption>(find.byKey(const ValueKey('stake-25')))
-            .selected,
-        isTrue,
-      );
-      await tester.tap(find.byKey(const ValueKey('start-staked-game')));
-      await tester.pumpAndSettle();
-      expect(selected, 25);
-      expect(tester.takeException(), isNull);
-      showDialog<int>(
-        context: context,
-        builder: (_) => const StakeSelector(balance: 0),
-      ).then((value) => selected = value);
-      await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const ValueKey('stake-0')));
-      await tester.tap(find.byKey(const ValueKey('start-staked-game')));
-      await tester.pumpAndSettle();
-      expect(selected, 0);
-    },
-  );
 }

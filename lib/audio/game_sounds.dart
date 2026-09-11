@@ -1,19 +1,56 @@
 import 'package:audioplayers/audioplayers.dart';
 
 class GameSounds {
+  GameSounds({AudioPlayer? cardSelectedPlayer})
+    : _cardSelectedPlayer = cardSelectedPlayer ?? AudioPlayer() {
+    _selectionReady = _prepareSelection();
+  }
+
+  static const selectionPlaybackRate = 1.25;
+  static const selectionPlayerMode = PlayerMode.lowLatency;
+  late final Future<bool> _selectionReady;
+  bool _disposed = false;
   bool _enabled = true;
   bool get enabled => _enabled;
 
   void setEnabled(bool enabled) => _enabled = enabled;
 
-  final AudioPlayer _cardSelectedPlayer = AudioPlayer();
+  final AudioPlayer _cardSelectedPlayer;
   final AudioPlayer _cardPlacedPlayer = AudioPlayer();
   final AudioPlayer _gameWinPlayer = AudioPlayer();
   final AudioPlayer _gameLostPlayer = AudioPlayer();
   final AudioPlayer _invalidPlayPlayer = AudioPlayer();
 
-  Future<void> playCardSelected() =>
-      _play(_cardSelectedPlayer, 'audio/card_selected.mp3');
+  Future<bool> _prepareSelection() async {
+    try {
+      await _cardSelectedPlayer.setPlayerMode(selectionPlayerMode);
+      if (_disposed) return false;
+      await _cardSelectedPlayer.setReleaseMode(ReleaseMode.stop);
+      if (_disposed) return false;
+      await _cardSelectedPlayer.setPlaybackRate(selectionPlaybackRate);
+      if (_disposed) return false;
+      // Short UI effects are better as WAV/OGG. Trimming leading silence from
+      // this MP3 would further improve response; preload it once in the meantime.
+      await _cardSelectedPlayer.setSource(
+        AssetSource('audio/card_selected.mp3'),
+      );
+      return !_disposed;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<void> playCardSelected() async {
+    if (!_enabled || _disposed) return;
+    if (!await _selectionReady || !_enabled || _disposed) return;
+    try {
+      await _cardSelectedPlayer.stop();
+      if (!_enabled || _disposed) return;
+      await _cardSelectedPlayer.resume();
+    } catch (_) {
+      // Sound effects must never interrupt gameplay.
+    }
+  }
 
   Future<void> playCardPlaced() =>
       _play(_cardPlacedPlayer, 'audio/card_placed.wav');
@@ -35,6 +72,7 @@ class GameSounds {
   }
 
   Future<void> dispose() async {
+    _disposed = true;
     await Future.wait([
       _cardSelectedPlayer.dispose(),
       _cardPlacedPlayer.dispose(),

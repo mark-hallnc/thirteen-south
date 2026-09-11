@@ -9,7 +9,7 @@ class AppLocalizationsVi extends AppLocalizations {
   AppLocalizationsVi([String locale = 'vi']) : super(locale);
 
   @override
-  String get playFor => 'Chơi với mức xu';
+  String get wager => 'Đặt cược';
 
   @override
   String get coins => 'Xu';
@@ -300,4 +300,16 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get soundEffectsDescription => 'Phát âm thanh khi chơi';
+
+  @override
+  String get notEnoughCoins => 'Không đủ xu';
+
+  @override
+  String get earnCoins => 'Kiếm xu';
+
+  @override
+  String get practice => 'Luyện tập';
+
+  @override
+  String get comingSoon => 'Sắp ra mắt';
 }

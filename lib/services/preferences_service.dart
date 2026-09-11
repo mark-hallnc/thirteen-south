@@ -34,31 +34,43 @@ class PreferencesService {
     return operation;
   }
 
-  Future<bool> commitStake(String gameId, int stake) => _coinTransaction(
-    () async {
-      if (!CoinEconomy.stakes.contains(stake)) throw ArgumentError.value(stake);
-      final state = _coinState();
-      final games = Map<String, dynamic>.from(state['games'] as Map? ?? {});
-      final existing = games[gameId] as Map?;
-      if (existing != null) return existing['stake'] == stake;
-      final coins = CoinStatistics.fromJson(state);
-      if (stake > coins.balance) return false;
-      games[gameId] = {'stake': stake, 'settled': false};
-      final updated = CoinStatistics(
-        balance: coins.balance - stake,
-        highestBalance: coins.highestBalance,
-        won: coins.won,
-        lost: coins.lost,
-      );
-      if (!await _preferences.setString(
-        coinStateKey,
-        jsonEncode({...updated.toJson(), 'games': games}),
-      )) {
-        throw StateError('Could not save coin commitment');
-      }
-      return true;
-    },
-  );
+  bool isPracticeGame(String gameId) =>
+      (_coinState()['games'] as Map?)?[gameId]?['practice'] == true;
+
+  Future<bool> commitStake(String gameId, int stake, {bool practice = false}) =>
+      _coinTransaction(() async {
+        if (!CoinEconomy.stakes.contains(stake)) {
+          throw ArgumentError.value(stake);
+        }
+        if (practice && stake != 0) throw ArgumentError.value(stake);
+        final state = _coinState();
+        final games = Map<String, dynamic>.from(state['games'] as Map? ?? {});
+        final existing = games[gameId] as Map?;
+        if (existing != null) {
+          return existing['stake'] == stake &&
+              (existing['practice'] == true) == practice;
+        }
+        final coins = CoinStatistics.fromJson(state);
+        if (stake > coins.balance) return false;
+        games[gameId] = {
+          'stake': stake,
+          'settled': false,
+          if (practice) 'practice': true,
+        };
+        final updated = CoinStatistics(
+          balance: coins.balance - stake,
+          highestBalance: coins.highestBalance,
+          won: coins.won,
+          lost: coins.lost,
+        );
+        if (!await _preferences.setString(
+          coinStateKey,
+          jsonEncode({...updated.toJson(), 'games': games}),
+        )) {
+          throw StateError('Could not save coin commitment');
+        }
+        return true;
+      });
 
   Future<CoinStatistics> settleGame({
     required String gameId,
@@ -76,15 +88,24 @@ class PreferencesService {
         (existing != null && existing['stake'] != stake)) {
       throw StateError('Stake was not committed for this game');
     }
-    final balance = coins.balance + CoinEconomy.payout(stake, humanWon);
-    final net = CoinEconomy.netChange(stake, humanWon);
-    final updated = CoinStatistics(
-      balance: balance,
-      highestBalance: math.max(coins.highestBalance, balance),
-      won: coins.won + math.max(0, net),
-      lost: coins.lost + (humanWon ? 0 : stake),
-    );
-    games[gameId] = {'stake': stake, 'settled': true};
+    // The ledger distinguishes Practice from older zero-stake Free Play saves.
+    final practice = existing?['practice'] == true;
+    final balance =
+        coins.balance + (practice ? 0 : CoinEconomy.payout(stake, humanWon));
+    final net = practice ? 0 : CoinEconomy.netChange(stake, humanWon);
+    final updated = practice
+        ? coins
+        : CoinStatistics(
+            balance: balance,
+            highestBalance: math.max(coins.highestBalance, balance),
+            won: coins.won + math.max(0, net),
+            lost: coins.lost + (humanWon ? 0 : stake),
+          );
+    games[gameId] = {
+      'stake': stake,
+      'settled': true,
+      if (practice) 'practice': true,
+    };
     if (!await _preferences.setString(
       coinStateKey,
       jsonEncode({...updated.toJson(), 'games': games}),

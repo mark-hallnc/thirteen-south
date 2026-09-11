@@ -42,8 +42,8 @@ void main() {
         await tester.ensureVisible(button);
         await tester.tap(button);
         await tester.pumpAndSettle();
-        expect(find.text('Play For'), findsOneWidget);
-        await tester.tap(find.text('Cancel'));
+        expect(find.text('Wager'), findsOneWidget);
+        await tester.tap(find.byKey(const ValueKey('close-wager')));
         await tester.pumpAndSettle();
       }
       expect(tester.takeException(), isNull);
@@ -58,6 +58,12 @@ void main() {
       expect(find.byType(AppBar), findsNothing);
       expect(find.textContaining('Thirteen South'), findsNothing);
       expect(find.byType(BackButton), findsOneWidget);
+      final walletRect = tester.getRect(find.byType(WalletPill));
+      final settingsRect = tester.getRect(find.byTooltip('Settings'));
+      final restartRect = tester.getRect(find.byTooltip('New Game'));
+      expect(settingsRect.right, lessThan(restartRect.left));
+      expect(restartRect.right, lessThan(walletRect.left));
+      expect(walletRect.right, closeTo(size.width - 8, .01));
       expect(find.byTooltip('Settings'), findsOneWidget);
       expect(find.byTooltip('New Game'), findsOneWidget);
       expect(find.byType(PlayerHand), findsOneWidget);

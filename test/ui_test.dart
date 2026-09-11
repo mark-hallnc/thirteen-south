@@ -90,7 +90,7 @@ void main() {
     await tester.ensureVisible(find.byKey(const ValueKey('new-game-button')));
     await tester.tap(find.byKey(const ValueKey('new-game-button')));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('start-staked-game')));
+    await tester.tap(find.byKey(const ValueKey('stake-10')));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
     expect(find.byKey(const ValueKey('game-table')), findsOneWidget);
