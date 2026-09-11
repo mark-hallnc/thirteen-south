@@ -373,145 +373,255 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
         unawaited(_confirmLeave());
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(loc.appTitle),
-          bottom: const WalletStatusRow(),
-          actions: [
-            IconButton(
-              tooltip: loc.settings,
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(builder: (_) => const SettingsScreen()),
-              ),
-              icon: const Icon(Icons.tune_rounded),
-            ),
-            IconButton(
-              tooltip: loc.newGame,
-              onPressed: _newGame,
-              icon: const Icon(Icons.refresh_rounded),
-            ),
-          ],
-        ),
-        body: SafeArea(
-          top: false,
-          child: Stack(
-            children: [
-              Column(
+        backgroundColor: const Color(0xFF103127),
+        body: Stack(
+          children: [
+            const Positioned.fill(child: _FeltBackground()),
+            SafeArea(
+              child: Stack(
                 children: [
-                  Expanded(
-                    child: _TableSurface(
-                      engine: _engine,
-                      nameFor: (player) => _name(player, loc),
-                    ),
-                  ),
-                  Container(
-                    color: Theme.of(context).colorScheme.surface,
-                    padding: const EdgeInsets.fromLTRB(12, 4, 12, 2),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        AnimatedContainer(
-                          duration: const Duration(milliseconds: 180),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 3,
-                          ),
-                          decoration: BoxDecoration(
-                            color: humanTurn
-                                ? Theme.of(context).colorScheme.primaryContainer
-                                : Colors.transparent,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            humanTurn
-                                ? loc.yourTurn
-                                : loc.playerTurn(
-                                    _name(state.currentPlayer, loc),
+                  Column(
+                    children: [
+                      Padding(
+                        key: const ValueKey('game-top-controls'),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        child: IconTheme(
+                          data: const IconThemeData(color: Color(0xFFE3EEE7)),
+                          child: Row(
+                            children: [
+                              BackButton(
+                                color: const Color(0xFFE3EEE7),
+                                onPressed: () =>
+                                    Navigator.of(context).maybePop(),
+                              ),
+                              const Spacer(),
+                              IconButton(
+                                color: const Color(0xFFE3EEE7),
+                                tooltip: loc.settings,
+                                onPressed: () => Navigator.of(context).push(
+                                  MaterialPageRoute<void>(
+                                    builder: (_) => const SettingsScreen(),
                                   ),
-                            key: const ValueKey('turn-label'),
-                            style: TextStyle(
-                              fontSize: sizes.tablet ? 18 : null,
-                              fontWeight: FontWeight.w700,
-                              color: humanTurn
-                                  ? Theme.of(
-                                      context,
-                                    ).colorScheme.onPrimaryContainer
-                                  : Theme.of(
-                                      context,
-                                    ).colorScheme.onSurfaceVariant,
-                            ),
+                                ),
+                                icon: const Icon(Icons.tune_rounded),
+                              ),
+                              IconButton(
+                                color: const Color(0xFFE3EEE7),
+                                tooltip: loc.newGame,
+                                onPressed: _newGame,
+                                icon: const Icon(Icons.refresh_rounded),
+                              ),
+                              const SizedBox(width: 4),
+                              Flexible(
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Theme(
+                                    data: Theme.of(context).copyWith(
+                                      textTheme: Theme.of(context).textTheme
+                                          .apply(
+                                            bodyColor: const Color(0xFFE3EEE7),
+                                            displayColor: const Color(
+                                              0xFFE3EEE7,
+                                            ),
+                                          ),
+                                      colorScheme: ColorScheme.fromSeed(
+                                        seedColor: const Color(0xFF315D50),
+                                        brightness: Brightness.dark,
+                                      ),
+                                    ),
+                                    child: WalletPill(
+                                      balance:
+                                          PreferencesScope.maybeOf(
+                                            context,
+                                          )?.coinBalance ??
+                                          500,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 2),
-                        Row(
+                      ),
+                      Expanded(
+                        child: _TableSurface(
+                          engine: _engine,
+                          nameFor: (player) => _name(player, loc),
+                        ),
+                      ),
+                      Container(
+                        color: const Color(0x18102118),
+                        padding: const EdgeInsets.fromLTRB(12, 4, 12, 2),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Expanded(
-                              child: OutlinedButton(
-                                style: OutlinedButton.styleFrom(
-                                  minimumSize: Size(0, sizes.controlHeight),
-                                  textStyle: TextStyle(
-                                    fontSize: sizes.tablet ? 18 : 14,
-                                  ),
+                            AnimatedContainer(
+                              duration: const Duration(milliseconds: 180),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 3,
+                              ),
+                              decoration: BoxDecoration(
+                                color: humanTurn
+                                    ? const Color(0xFF315D48)
+                                    : Colors.transparent,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                humanTurn
+                                    ? loc.yourTurn
+                                    : loc.playerTurn(
+                                        _name(state.currentPlayer, loc),
+                                      ),
+                                key: const ValueKey('turn-label'),
+                                style: TextStyle(
+                                  fontSize: sizes.tablet ? 18 : null,
+                                  fontWeight: FontWeight.w700,
+                                  color: humanTurn
+                                      ? const Color(0xFFF0F6E9)
+                                      : const Color(0xFFB8CEC1),
                                 ),
-                                key: const ValueKey('pass-button'),
-                                onPressed:
-                                    humanTurn && state.currentTableMove != null
-                                    ? _pass
-                                    : null,
-                                child: Text(loc.pass),
                               ),
                             ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: FilledButton(
-                                style: FilledButton.styleFrom(
-                                  minimumSize: Size(0, sizes.controlHeight),
-                                  textStyle: TextStyle(
-                                    fontSize: sizes.tablet ? 18 : 14,
+                            const SizedBox(height: 2),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: OutlinedButton(
+                                    style: OutlinedButton.styleFrom(
+                                      foregroundColor: const Color(0xFFE3EEE7),
+                                      disabledForegroundColor: const Color(
+                                        0xFF789184,
+                                      ),
+                                      side: const BorderSide(
+                                        color: Color(0xFF577B69),
+                                      ),
+                                      minimumSize: Size(0, sizes.controlHeight),
+                                      textStyle: TextStyle(
+                                        fontSize: sizes.tablet ? 18 : 14,
+                                      ),
+                                    ),
+                                    key: const ValueKey('pass-button'),
+                                    onPressed:
+                                        humanTurn &&
+                                            state.currentTableMove != null
+                                        ? _pass
+                                        : null,
+                                    child: Text(loc.pass),
                                   ),
                                 ),
-                                key: const ValueKey('play-button'),
-                                onPressed: humanTurn && _selected.isNotEmpty
-                                    ? _play
-                                    : null,
-                                child: Text(loc.play),
-                              ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: FilledButton(
+                                    style: FilledButton.styleFrom(
+                                      backgroundColor: const Color(0xFF3F7959),
+                                      foregroundColor: const Color(0xFFF0F6E9),
+                                      disabledBackgroundColor: const Color(
+                                        0xFF203D30,
+                                      ),
+                                      disabledForegroundColor: const Color(
+                                        0xFF789184,
+                                      ),
+                                      minimumSize: Size(0, sizes.controlHeight),
+                                      textStyle: TextStyle(
+                                        fontSize: sizes.tablet ? 18 : 14,
+                                      ),
+                                    ),
+                                    key: const ValueKey('play-button'),
+                                    onPressed: humanTurn && _selected.isNotEmpty
+                                        ? _play
+                                        : null,
+                                    child: Text(loc.play),
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
-                      ],
-                    ),
+                      ),
+                      Container(
+                        key: const ValueKey('human-hand-tray'),
+                        decoration: const BoxDecoration(
+                          color: Color(0x33102118),
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(18),
+                          ),
+                        ),
+                        padding: const EdgeInsets.fromLTRB(8, 0, 8, 3),
+                        child: PlayerHand(
+                          cards: _humanCardOrder,
+                          onReorder: state.isActive ? _reorderHand : null,
+                          selectedCards: _selected,
+                          onCardTap: _toggleCard,
+                          enabled: humanTurn,
+                        ),
+                      ),
+                    ],
                   ),
-                  Container(
-                    color: Theme.of(context).colorScheme.surface,
-                    padding: const EdgeInsets.fromLTRB(8, 0, 8, 3),
-                    child: PlayerHand(
-                      cards: _humanCardOrder,
-                      onReorder: state.isActive ? _reorderHand : null,
-                      selectedCards: _selected,
-                      onCardTap: _toggleCard,
-                      enabled: humanTurn,
+                  if (state.winner != null)
+                    Positioned.fill(
+                      top: 56,
+                      child: _GameOverOverlay(
+                        title: loc.gameOver,
+                        message: state.winner!.isHuman
+                            ? loc.youWin
+                            : loc.playerWins(_name(state.winner!, loc)),
+                        buttonLabel: loc.newGame,
+                        coinResult: _coinResultText(loc, state.winner!.isHuman),
+                        onNewGame: _newGame,
+                      ),
                     ),
-                  ),
                 ],
               ),
-              if (state.winner != null)
-                Positioned.fill(
-                  child: _GameOverOverlay(
-                    title: loc.gameOver,
-                    message: state.winner!.isHuman
-                        ? loc.youWin
-                        : loc.playerWins(_name(state.winner!, loc)),
-                    buttonLabel: loc.newGame,
-                    coinResult: _coinResultText(loc, state.winner!.isHuman),
-                    onNewGame: _newGame,
-                  ),
-                ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
+}
+
+class _FeltBackground extends StatelessWidget {
+  const _FeltBackground();
+  @override
+  Widget build(BuildContext context) => Container(
+    key: const ValueKey('game-felt-background'),
+    decoration: const BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [Color(0xFF12382D), Color(0xFF194A3B), Color(0xFF103127)],
+        stops: [0, .48, 1],
+      ),
+      boxShadow: [
+        BoxShadow(
+          color: Color(0x33000000),
+          blurRadius: 10,
+          offset: Offset(0, 3),
+        ),
+      ],
+    ),
+    child: Stack(
+      children: [
+        const Positioned.fill(
+          child: IgnorePointer(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: RadialGradient(
+                  center: Alignment(0, -.1),
+                  radius: .9,
+                  colors: [Color(0x242F8062), Color(0x002F8062)],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 class _TableSurface extends StatelessWidget {
@@ -542,39 +652,11 @@ class _TableSurface extends StatelessWidget {
       );
     }
 
-    return Container(
+    return SizedBox(
       key: const ValueKey('game-table'),
       width: double.infinity,
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xFF12382D), Color(0xFF194A3B), Color(0xFF103127)],
-          stops: [0, .48, 1],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Color(0x33000000),
-            blurRadius: 10,
-            offset: Offset(0, 3),
-          ),
-        ],
-      ),
       child: Stack(
         children: [
-          const Positioned.fill(
-            child: IgnorePointer(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: RadialGradient(
-                    center: Alignment(0, -.1),
-                    radius: .9,
-                    colors: [Color(0x242F8062), Color(0x002F8062)],
-                  ),
-                ),
-              ),
-            ),
-          ),
           Positioned(
             top: 12,
             left: 12,

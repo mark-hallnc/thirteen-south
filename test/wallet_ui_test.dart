@@ -59,10 +59,8 @@ void main() {
     expect(find.byType(WalletPill), findsOneWidget);
     expect(find.byKey(const ValueKey('game-stake')), findsNothing);
     expect(find.text('Free Play'), findsNothing);
-    expect(
-      tester.widget<WalletStatusRow>(find.byType(WalletStatusRow)).trailing,
-      isNull,
-    );
+    expect(find.byType(AppBar), findsNothing);
+    expect(find.byKey(const ValueKey('game-top-controls')), findsOneWidget);
     await tester.pumpWidget(const SizedBox());
     await tester.pumpAndSettle();
   });

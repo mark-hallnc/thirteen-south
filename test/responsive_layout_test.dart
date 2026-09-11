@@ -55,7 +55,33 @@ void main() {
       await tester.pump();
       expect(find.byType(OpponentPanel), findsNWidgets(3));
       expect(find.byType(WalletPill), findsOneWidget);
+      expect(find.byType(AppBar), findsNothing);
+      expect(find.textContaining('Thirteen South'), findsNothing);
+      expect(find.byType(BackButton), findsOneWidget);
+      expect(find.byTooltip('Settings'), findsOneWidget);
+      expect(find.byTooltip('New Game'), findsOneWidget);
+      expect(find.byType(PlayerHand), findsOneWidget);
+      expect(find.byKey(const ValueKey('human-hand-tray')), findsOneWidget);
+      expect(
+        tester.getSize(find.byKey(const ValueKey('game-felt-background'))),
+        size,
+      );
       expect(find.byKey(const ValueKey('game-stake')), findsNothing);
+      expect(find.text('Free Play'), findsNothing);
+      final gameId = engine.gameId;
+      final handBefore = List<PlayingCard>.of(engine.players.first.hand);
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
+      expect(find.text('Leave game?'), findsOneWidget);
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('New Game'));
+      await tester.pumpAndSettle();
+      expect(find.text('Your saved game will be replaced.'), findsOneWidget);
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+      expect(engine.gameId, gameId);
+      expect(engine.players.first.hand, handBefore);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox());
       await tester.pumpAndSettle();
